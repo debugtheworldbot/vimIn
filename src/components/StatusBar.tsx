@@ -99,7 +99,7 @@ export default function StatusBar({ mode, copied, onCopyClick, theme }: StatusBa
             fontFamily: "'SF Mono', Menlo, Monaco, monospace",
           }}
         >
-          :w copy · :q hide · :wq both
+          :w copy · :q hide · Cmd+Shift+C clear
         </span>
         <button
           onClick={onCopyClick}

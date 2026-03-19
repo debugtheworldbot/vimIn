@@ -149,6 +149,13 @@ function App() {
         window.dispatchEvent(new Event("copy-all"));
         return;
       }
+      // Cmd/Ctrl + Shift + C: clear editor
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "c") {
+        e.preventDefault();
+        e.stopPropagation();
+        window.dispatchEvent(new Event("clear-editor"));
+        return;
+      }
       // Cmd/Ctrl + W: close the current window
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "w") {
         e.preventDefault();
