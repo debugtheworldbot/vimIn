@@ -1,0 +1,58 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Read version from package.json
+        run: echo "APP_VERSION=$(node -p \"require('./package.json').version\")" >> "$GITHUB_ENV"
+
+      - name: Verify tag matches package.json version
+        run: |
+          if [ "${GITHUB_REF_NAME}" != "v${APP_VERSION}" ]; then
+            echo "Expected tag v${APP_VERSION}, got ${GITHUB_REF_NAME}"
+            exit 1
+          fi
+
+      - name: Sync Tauri version files
+        run: pnpm run sync-version
+
+      - name: Build app and publish release
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: v${{ env.APP_VERSION }}
+          releaseName: "VimInput v${{ env.APP_VERSION }}"
+          releaseBody: "Automated release for v${{ env.APP_VERSION }}"
+          releaseDraft: false
+          prerelease: ${{ contains(env.APP_VERSION, '-') }}

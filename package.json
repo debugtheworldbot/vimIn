@@ -1,14 +1,15 @@
 {
   "name": "frontend",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "sync-version": "node scripts/sync-version.mjs",
+    "build": "pnpm run sync-version && tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "tauri": "tauri"
+    "tauri": "pnpm run sync-version && tauri"
   },
   "dependencies": {
     "@codemirror/commands": "^6.10.3",
