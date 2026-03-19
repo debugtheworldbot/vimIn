@@ -16,7 +16,7 @@ if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([-.][0-9A-Za-z.-]+)?$ ]]; then
   exit 1
 fi
 
-if ! git diff --quiet || ! git diff --cached --quiet; then
+if [[ -n "$(git status --porcelain)" ]]; then
   echo "Working tree is not clean. Commit or stash changes before releasing."
   exit 1
 fi
@@ -26,8 +26,18 @@ if git rev-parse "$TAG" >/dev/null 2>&1; then
   exit 1
 fi
 
-if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
+set +e
+git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1
+REMOTE_TAG_STATUS=$?
+set -e
+
+if [ "$REMOTE_TAG_STATUS" -eq 0 ]; then
   echo "Tag $TAG already exists on origin."
+  exit 1
+fi
+
+if [ "$REMOTE_TAG_STATUS" -ne 2 ]; then
+  echo "Failed to verify tags on origin. Check remote access before releasing."
   exit 1
 fi
 
@@ -52,11 +62,11 @@ NODE
 
 pnpm run sync-version
 
-git add package.json package-lock.json src-tauri/Cargo.toml src-tauri/tauri.conf.json
+git add package.json package-lock.json src-tauri/Cargo.toml src-tauri/Cargo.lock src-tauri/tauri.conf.json
 git commit \
   -m "chore(release): $TAG" \
   -m "Co-authored-by: chatgpt-codex-connector[bot] <199175422+chatgpt-codex-connector[bot]@users.noreply.github.com>" \
-  -- package.json package-lock.json src-tauri/Cargo.toml src-tauri/tauri.conf.json
+  -- package.json package-lock.json src-tauri/Cargo.toml src-tauri/Cargo.lock src-tauri/tauri.conf.json
 git tag "$TAG"
 git push origin "$BRANCH"
 git push origin "$TAG"
