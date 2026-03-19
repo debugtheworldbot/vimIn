@@ -18,24 +18,24 @@ export default function TitleBar({
   const isDark = theme === "dark";
   const colors = isDark
     ? {
-        background: "rgba(24, 24, 27, 0.95)",
-        border: "1px solid rgba(255, 255, 255, 0.06)",
-        title: "#71717a",
-        shortcut: "#3f3f46",
-        icon: "#52525b",
-        iconHover: "#a1a1aa",
+        background: "rgba(255, 255, 255, 0.04)",
+        border: "1px solid rgba(255, 255, 255, 0.08)",
+        title: "rgba(255, 255, 255, 0.56)",
+        shortcut: "rgba(255, 255, 255, 0.32)",
+        icon: "rgba(255, 255, 255, 0.42)",
+        iconHover: "rgba(255, 255, 255, 0.82)",
         iconHoverBg: "rgba(255, 255, 255, 0.06)",
-        trafficIdle: "rgba(255, 255, 255, 0.08)",
+        trafficIdle: "rgba(255, 255, 255, 0.1)",
       }
     : {
-        background: "rgba(250, 250, 249, 0.96)",
-        border: "1px solid rgba(24, 24, 27, 0.08)",
-        title: "#57534e",
-        shortcut: "#a8a29e",
-        icon: "#78716c",
-        iconHover: "#292524",
-        iconHoverBg: "rgba(24, 24, 27, 0.06)",
-        trafficIdle: "rgba(24, 24, 27, 0.08)",
+        background: "rgba(255, 255, 255, 0.1)",
+        border: "1px solid rgba(255, 255, 255, 0.38)",
+        title: "rgba(17, 24, 39, 0.62)",
+        shortcut: "rgba(17, 24, 39, 0.34)",
+        icon: "rgba(17, 24, 39, 0.46)",
+        iconHover: "rgba(17, 24, 39, 0.9)",
+        iconHoverBg: "rgba(255, 255, 255, 0.28)",
+        trafficIdle: "rgba(17, 24, 39, 0.12)",
       };
 
   const handleDragStart = async (event: ReactMouseEvent<HTMLElement>) => {
@@ -62,8 +62,8 @@ export default function TitleBar({
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        padding: "0 12px",
-        height: "32px",
+        padding: "0 16px",
+        height: "38px",
         backgroundColor: colors.background,
         borderBottom: colors.border,
         userSelect: "none",
@@ -72,8 +72,12 @@ export default function TitleBar({
         flexShrink: 0,
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+      <div
+        data-tauri-drag-region
+        style={{ display: "flex", alignItems: "center", gap: "8px" }}
+      >
         <button
+          data-tauri-no-drag
           onClick={onClose}
           style={{
             width: "12px",
@@ -133,6 +137,7 @@ export default function TitleBar({
 
       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
         <span
+          data-tauri-drag-region
           style={{
             color: colors.shortcut,
             fontSize: "10px",
@@ -142,6 +147,7 @@ export default function TitleBar({
           {shortcutDisplay}
         </span>
         <button
+          data-tauri-no-drag
           onClick={onThemeToggle}
           style={{
             width: "22px",
@@ -186,6 +192,7 @@ export default function TitleBar({
           )}
         </button>
         <button
+          data-tauri-no-drag
           onClick={onSettingsClick}
           style={{
             width: "22px",

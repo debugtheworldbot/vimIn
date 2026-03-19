@@ -9,16 +9,30 @@ html, body, #root {
   width: 100%;
   overflow: hidden;
   background: transparent;
+  border-radius: 20px;
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
 }
 
 body {
   background: transparent;
+  border-radius: 20px;
+}
+
+#root {
+  isolation: isolate;
+  clip-path: inset(0 round 20px);
 }
 
 [data-tauri-drag-region] {
   -webkit-user-select: none;
   user-select: none;
+  -webkit-app-region: drag;
+  app-region: drag;
+}
+
+[data-tauri-no-drag] {
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
 }
 
 .editor-container .cm-editor {
