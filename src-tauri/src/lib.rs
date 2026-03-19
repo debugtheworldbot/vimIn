@@ -486,3 +486,23 @@ pub fn run() {
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
+
+#[cfg(test)]
+mod tests {
+    use serde_json::Value;
+
+    #[test]
+    fn main_window_is_visible_on_launch() {
+        let config: Value =
+            serde_json::from_str(include_str!("../tauri.conf.json")).expect("valid tauri config");
+        let windows = config["app"]["windows"]
+            .as_array()
+            .expect("app.windows should be an array");
+        let main_window = windows
+            .iter()
+            .find(|window| window["label"] == "main")
+            .expect("main window should exist");
+
+        assert_eq!(main_window["visible"].as_bool(), Some(true));
+    }
+}

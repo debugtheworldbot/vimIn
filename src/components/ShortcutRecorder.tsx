@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import ShortcutDisplay from "./ShortcutDisplay";
 
 interface ShortcutRecorderProps {
   currentShortcut: string; // e.g. "Alt+Space"
@@ -278,15 +279,13 @@ export default function ShortcutRecorder({
                 Press your shortcut...
               </span>
             ) : (
-              <span style={{
-                fontSize: "18px",
-                color: colors.text,
-                fontFamily: "'SF Mono', Menlo, Monaco, monospace",
-                fontWeight: 500,
-                letterSpacing: "2px",
-              }}>
-                {formatShortcutDisplay(displayShortcut)}
-              </span>
+              <ShortcutDisplay
+                shortcut={formatShortcutDisplay(displayShortcut)}
+                color={colors.text}
+                fontSize="18px"
+                fontWeight={500}
+                letterSpacing="2px"
+              />
             )}
           </div>
           </div>

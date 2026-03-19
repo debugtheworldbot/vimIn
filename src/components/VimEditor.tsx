@@ -195,6 +195,7 @@ const themeCompartment = new Compartment();
 export default function VimEditor({ onCopy, onModeChange, theme }: VimEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
+  const initialThemeRef = useRef(theme);
 
   const handleCopy = useCallback((text: string) => {
     onCopy(text);
@@ -239,23 +240,21 @@ export default function VimEditor({ onCopy, onModeChange, theme }: VimEditorProp
     const modeChangeListener = EditorView.updateListener.of((update) => {
       if (update.transactions.length > 0) {
         const cm = getCM(update.view);
-        if (cm) {
-          const vimState = (cm as any).state?.vim;
-          if (vimState) {
-            let mode = "NORMAL";
-            if (vimState.insertMode) {
-              mode = "INSERT";
-            } else if (vimState.visualMode) {
-              if (vimState.visualLine) {
-                mode = "V-LINE";
-              } else if (vimState.visualBlock) {
-                mode = "V-BLOCK";
-              } else {
-                mode = "VISUAL";
-              }
+        if (hasVimState(cm)) {
+          const { vim: vimState } = cm.state;
+          let mode = "NORMAL";
+          if (vimState.insertMode) {
+            mode = "INSERT";
+          } else if (vimState.visualMode) {
+            if (vimState.visualLine) {
+              mode = "V-LINE";
+            } else if (vimState.visualBlock) {
+              mode = "V-BLOCK";
+            } else {
+              mode = "VISUAL";
             }
-            onModeChange(mode);
           }
+          onModeChange(mode);
         }
       }
     });
@@ -275,7 +274,7 @@ export default function VimEditor({ onCopy, onModeChange, theme }: VimEditorProp
           ...defaultKeymap,
           ...historyKeymap,
         ]),
-        themeCompartment.of(theme === "dark" ? darkTheme : lightTheme),
+        themeCompartment.of(initialThemeRef.current === "dark" ? darkTheme : lightTheme),
         modeChangeListener,
         EditorView.lineWrapping,
       ],

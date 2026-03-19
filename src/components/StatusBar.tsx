@@ -1,3 +1,5 @@
+import ShortcutDisplay from "./ShortcutDisplay";
+
 interface StatusBarProps {
   mode: string;
   copied: boolean;
@@ -97,9 +99,18 @@ export default function StatusBar({ mode, copied, onCopyClick, theme }: StatusBa
             color: colors.hintText,
             fontSize: "11px",
             fontFamily: "'SF Mono', Menlo, Monaco, monospace",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "4px",
           }}
         >
-          :w copy · :q hide · Cmd+Shift+C clear
+          <span>:w copy · :q hide ·</span>
+          <ShortcutDisplay
+            shortcut="⌘ ⇧ C"
+            color={colors.hintText}
+            fontSize="11px"
+          />
+          <span>clear</span>
         </span>
         <button
           onClick={onCopyClick}

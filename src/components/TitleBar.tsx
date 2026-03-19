@@ -1,4 +1,5 @@
 import { useState, type MouseEvent as ReactMouseEvent } from "react";
+import ShortcutDisplay from "./ShortcutDisplay";
 
 interface TitleBarProps {
   onClose: () => void;
@@ -151,12 +152,16 @@ export default function TitleBar({
         <span
           data-tauri-drag-region
           style={{
-            color: colors.shortcut,
-            fontSize: "10px",
-            fontFamily: "'SF Mono', Menlo, Monaco, monospace",
+            display: "inline-flex",
+            alignItems: "center",
+            height: "22px",
           }}
         >
-          {shortcutDisplay}
+          <ShortcutDisplay
+            shortcut={shortcutDisplay}
+            color={colors.shortcut}
+            fontSize="10px"
+          />
         </span>
         <button
           data-tauri-no-drag
