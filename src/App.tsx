@@ -66,13 +66,11 @@ function App() {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
 
-    // Auto-hide window after copy
+    // Auto-hide window immediately after copy
     try {
       const { invoke } = await import("@tauri-apps/api/core");
-      setTimeout(async () => {
-        await invoke("hide_window");
-        window.dispatchEvent(new Event("clear-editor"));
-      }, 300);
+      await invoke("hide_window");
+      window.dispatchEvent(new Event("clear-editor"));
     } catch {
       // Not in Tauri environment
     }
@@ -101,7 +99,16 @@ function App() {
       // Cmd + Enter: copy all content
       if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
         e.preventDefault();
+        e.stopPropagation();
         window.dispatchEvent(new Event("copy-all"));
+        return;
+      }
+      // Cmd/Ctrl + W: close the current window
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "w") {
+        e.preventDefault();
+        e.stopPropagation();
+        void handleClose();
+        return;
       }
       // Escape closes settings if open
       if (e.key === "Escape" && showSettings) {
@@ -110,9 +117,9 @@ function App() {
       }
     };
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [showSettings]);
+    window.addEventListener("keydown", handleKeyDown, true);
+    return () => window.removeEventListener("keydown", handleKeyDown, true);
+  }, [handleClose, showSettings]);
 
   // Listen for window show event to focus editor
   useEffect(() => {
