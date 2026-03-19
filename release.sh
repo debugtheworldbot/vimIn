@@ -53,7 +53,10 @@ NODE
 pnpm run sync-version
 
 git add package.json package-lock.json src-tauri/Cargo.toml src-tauri/tauri.conf.json
-git commit -m "chore(release): $TAG" -- package.json package-lock.json src-tauri/Cargo.toml src-tauri/tauri.conf.json
+git commit \
+  -m "chore(release): $TAG" \
+  -m "Co-authored-by: chatgpt-codex-connector[bot] <199175422+chatgpt-codex-connector[bot]@users.noreply.github.com>" \
+  -- package.json package-lock.json src-tauri/Cargo.toml src-tauri/tauri.conf.json
 git tag "$TAG"
 git push origin "$BRANCH"
 git push origin "$TAG"
