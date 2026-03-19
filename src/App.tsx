@@ -7,6 +7,12 @@ import ShortcutRecorder from "./components/ShortcutRecorder";
 const DEFAULT_SHORTCUT = "Alt+Space";
 type ThemeMode = "dark" | "light";
 
+function getInitialTheme(): ThemeMode {
+  const saved = localStorage.getItem("theme");
+  if (saved === "dark" || saved === "light") return saved;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
 function formatShortcutDisplay(shortcut: string): string {
   return shortcut
     .replace(/Alt/g, "⌥")
@@ -22,7 +28,7 @@ function App() {
   const [copied, setCopied] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [currentShortcut, setCurrentShortcut] = useState(DEFAULT_SHORTCUT);
-  const [theme, setTheme] = useState<ThemeMode>("dark");
+  const [theme, setTheme] = useState<ThemeMode>(getInitialTheme);
 
   const themeStyles = theme === "dark"
     ? {
@@ -173,7 +179,11 @@ function App() {
         onSettingsClick={() => setShowSettings(true)}
         shortcutDisplay={formatShortcutDisplay(currentShortcut)}
         theme={theme}
-        onThemeToggle={() => setTheme((current) => current === "dark" ? "light" : "dark")}
+        onThemeToggle={() => setTheme((current) => {
+          const next = current === "dark" ? "light" : "dark";
+          localStorage.setItem("theme", next);
+          return next;
+        })}
       />
       <VimEditor onCopy={handleCopy} onModeChange={handleModeChange} theme={theme} />
       <StatusBar mode={mode} copied={copied} onCopyClick={handleCopyClick} theme={theme} />

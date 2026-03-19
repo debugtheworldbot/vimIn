@@ -1,6 +1,6 @@
 import { useEffect, useRef, useCallback } from "react";
 import { EditorView, keymap, drawSelection, highlightActiveLine, lineNumbers } from "@codemirror/view";
-import { EditorState } from "@codemirror/state";
+import { EditorState, Compartment } from "@codemirror/state";
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import { vim, Vim, getCM } from "@replit/codemirror-vim";
 import type { CodeMirrorV } from "@replit/codemirror-vim";
@@ -178,6 +178,8 @@ const lightTheme = EditorView.theme({
   },
 }, { dark: false });
 
+const themeCompartment = new Compartment();
+
 export default function VimEditor({ onCopy, onModeChange, theme }: VimEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
@@ -261,7 +263,7 @@ export default function VimEditor({ onCopy, onModeChange, theme }: VimEditorProp
           ...defaultKeymap,
           ...historyKeymap,
         ]),
-        theme === "dark" ? darkTheme : lightTheme,
+        themeCompartment.of(theme === "dark" ? darkTheme : lightTheme),
         modeChangeListener,
         EditorView.lineWrapping,
       ],
@@ -282,7 +284,16 @@ export default function VimEditor({ onCopy, onModeChange, theme }: VimEditorProp
     return () => {
       view.destroy();
     };
-  }, [handleCopy, onModeChange, theme]);
+  }, [handleCopy, onModeChange]);
+
+  // Dynamically switch theme without recreating editor
+  useEffect(() => {
+    if (viewRef.current) {
+      viewRef.current.dispatch({
+        effects: themeCompartment.reconfigure(theme === "dark" ? darkTheme : lightTheme),
+      });
+    }
+  }, [theme]);
 
   // Expose focus method and getText
   useEffect(() => {

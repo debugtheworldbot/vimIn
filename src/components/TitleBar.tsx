@@ -1,4 +1,4 @@
-import type { MouseEvent as ReactMouseEvent } from "react";
+import { useState, type MouseEvent as ReactMouseEvent } from "react";
 
 interface TitleBarProps {
   onClose: () => void;
@@ -15,6 +15,7 @@ export default function TitleBar({
   theme,
   onThemeToggle,
 }: TitleBarProps) {
+  const [isCloseHovered, setIsCloseHovered] = useState(false);
   const isDark = theme === "dark";
   const colors = isDark
     ? {
@@ -84,24 +85,35 @@ export default function TitleBar({
             height: "12px",
             borderRadius: "50%",
             border: "none",
-            backgroundColor: "#f87171",
+            backgroundColor: isCloseHovered ? "#ff5f57" : "#ff605c",
             cursor: "pointer",
             padding: 0,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            transition: "opacity 0.15s",
+            transition: "background-color 0.15s ease, transform 0.15s ease",
+            transform: isCloseHovered ? "scale(1.02)" : "scale(1)",
           }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.opacity = "0.8";
+          onMouseEnter={() => {
+            setIsCloseHovered(true);
           }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.opacity = "1";
+          onMouseLeave={() => {
+            setIsCloseHovered(false);
           }}
           title="Hide (Esc)"
         >
-          <svg width="6" height="6" viewBox="0 0 6 6" fill="none">
-            <path d="M0.5 0.5L5.5 5.5M5.5 0.5L0.5 5.5" stroke="rgba(0,0,0,0.4)" strokeWidth="1.2" strokeLinecap="round" />
+          <svg
+            width="6"
+            height="6"
+            viewBox="0 0 6 6"
+            fill="none"
+            style={{
+              opacity: isCloseHovered ? 1 : 0,
+              transition: "opacity 0.12s ease",
+              pointerEvents: "none",
+            }}
+          >
+            <path d="M0.5 0.5L5.5 5.5M5.5 0.5L0.5 5.5" stroke="rgba(80, 16, 12, 0.72)" strokeWidth="1.2" strokeLinecap="round" />
           </svg>
         </button>
         <div
