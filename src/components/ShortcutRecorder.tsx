@@ -3,6 +3,12 @@ import { useState, useEffect, useCallback, useRef } from "react";
 interface ShortcutRecorderProps {
   currentShortcut: string; // e.g. "Alt+Space"
   onShortcutChange: (shortcut: string) => void;
+  visibilitySettings: {
+    hide_menu_bar_icon: boolean;
+  };
+  onVisibilitySettingsChange: (settings: {
+    hide_menu_bar_icon: boolean;
+  }) => void;
   onClose: () => void;
   theme: "dark" | "light";
 }
@@ -73,7 +79,14 @@ function formatShortcutDisplay(shortcut: string): string {
     .replace(/\+/g, " ");
 }
 
-export default function ShortcutRecorder({ currentShortcut, onShortcutChange, onClose, theme }: ShortcutRecorderProps) {
+export default function ShortcutRecorder({
+  currentShortcut,
+  onShortcutChange,
+  visibilitySettings,
+  onVisibilitySettingsChange,
+  onClose,
+  theme,
+}: ShortcutRecorderProps) {
   const [recording, setRecording] = useState(false);
   const [pendingShortcut, setPendingShortcut] = useState<string | null>(null);
   const recorderRef = useRef<HTMLDivElement>(null);
@@ -151,13 +164,22 @@ export default function ShortcutRecorder({ currentShortcut, onShortcutChange, on
   const handleSave = () => {
     if (pendingShortcut) {
       onShortcutChange(pendingShortcut);
+      return;
     }
+
+    onClose();
   };
 
   const handleCancel = () => {
     setPendingShortcut(null);
     setRecording(false);
     onClose();
+  };
+
+  const handleMenuBarIconChange = (checked: boolean) => {
+    void onVisibilitySettingsChange({
+      hide_menu_bar_icon: checked,
+    });
   };
 
   const displayShortcut = pendingShortcut || currentShortcut;
@@ -181,7 +203,7 @@ export default function ShortcutRecorder({ currentShortcut, onShortcutChange, on
       <div
         ref={recorderRef}
         style={{
-          width: "360px",
+          width: "400px",
           backgroundColor: colors.modal,
           borderRadius: "12px",
           border: colors.border,
@@ -209,12 +231,25 @@ export default function ShortcutRecorder({ currentShortcut, onShortcutChange, on
             color: colors.body,
             fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif",
           }}>
-            Choose a key combination to toggle VimInput
+            Configure how VimInput is shown and how it stays accessible
           </p>
         </div>
 
-        {/* Shortcut display */}
         <div style={{ padding: "20px" }}>
+          <div style={{
+            marginBottom: "18px",
+          }}>
+            <div style={{
+              marginBottom: "10px",
+              fontSize: "11px",
+              fontWeight: 600,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              color: colors.body,
+              fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif",
+            }}>
+              Global Shortcut
+            </div>
           <div
             onClick={() => setRecording(true)}
             style={{
@@ -254,8 +289,8 @@ export default function ShortcutRecorder({ currentShortcut, onShortcutChange, on
               </span>
             )}
           </div>
+          </div>
 
-          {/* Hint */}
           <p style={{
             margin: "10px 0 0",
             fontSize: "11px",
@@ -268,6 +303,86 @@ export default function ShortcutRecorder({ currentShortcut, onShortcutChange, on
               : "Click to record a new shortcut"
             }
           </p>
+
+          <div style={{
+            marginTop: "20px",
+            paddingTop: "18px",
+            borderTop: colors.subtleBorder,
+            display: "flex",
+            flexDirection: "column",
+            gap: "12px",
+          }}>
+            <div style={{
+              fontSize: "11px",
+              fontWeight: 600,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              color: colors.body,
+              fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif",
+            }}>
+              Visibility
+            </div>
+
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+                width: "100%",
+                padding: "12px",
+                borderRadius: "10px",
+                border: colors.displayBorder,
+                backgroundColor: colors.displayBg,
+                cursor: "pointer",
+                textAlign: "left",
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={visibilitySettings.hide_menu_bar_icon}
+                onMouseDown={(e) => {
+                  e.stopPropagation();
+                }}
+                onChange={(e) => {
+                  handleMenuBarIconChange(e.currentTarget.checked);
+                }}
+                style={{
+                  width: "16px",
+                  height: "16px",
+                  accentColor: "#2563eb",
+                  flexShrink: 0,
+                }}
+              />
+              <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                <span style={{
+                  fontSize: "13px",
+                  color: colors.text,
+                  fontWeight: 500,
+                  fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif",
+                }}>
+                  Hide menu bar icon
+                </span>
+                <span style={{
+                  fontSize: "11px",
+                  color: colors.body,
+                  lineHeight: 1.45,
+                  fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif",
+                }}>
+                  Remove the status bar icon from the macOS menu bar.
+                </span>
+              </div>
+            </label>
+
+            <p style={{
+              margin: 0,
+              fontSize: "11px",
+              color: colors.body,
+              lineHeight: 1.5,
+              fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif",
+            }}>
+              Dock icon stays hidden. You can still show VimInput with the global shortcut.
+            </p>
+          </div>
         </div>
 
         {/* Footer buttons */}
@@ -302,31 +417,26 @@ export default function ShortcutRecorder({ currentShortcut, onShortcutChange, on
           </button>
           <button
             onClick={handleSave}
-            disabled={!pendingShortcut}
             style={{
               padding: "6px 16px",
               borderRadius: "6px",
               border: "none",
-              backgroundColor: pendingShortcut ? "#a78bfa" : "rgba(167, 139, 250, 0.3)",
-              color: pendingShortcut ? "#18181b" : "#71717a",
+              backgroundColor: "#a78bfa",
+              color: "#18181b",
               fontSize: "12px",
               fontWeight: 600,
               fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif",
-              cursor: pendingShortcut ? "pointer" : "not-allowed",
+              cursor: "pointer",
               transition: "all 0.15s ease",
             }}
             onMouseEnter={(e) => {
-              if (pendingShortcut) {
-                e.currentTarget.style.backgroundColor = "#8b5cf6";
-              }
+              e.currentTarget.style.backgroundColor = "#8b5cf6";
             }}
             onMouseLeave={(e) => {
-              if (pendingShortcut) {
-                e.currentTarget.style.backgroundColor = "#a78bfa";
-              }
+              e.currentTarget.style.backgroundColor = "#a78bfa";
             }}
           >
-            Save
+            {pendingShortcut ? "Save" : "Done"}
           </button>
         </div>
       </div>

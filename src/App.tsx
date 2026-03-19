@@ -7,6 +7,10 @@ import ShortcutRecorder from "./components/ShortcutRecorder";
 const DEFAULT_SHORTCUT = "Alt+Space";
 type ThemeMode = "dark" | "light";
 
+type VisibilitySettings = {
+  hide_menu_bar_icon: boolean;
+};
+
 function getInitialTheme(): ThemeMode {
   const saved = localStorage.getItem("theme");
   if (saved === "dark" || saved === "light") return saved;
@@ -29,6 +33,9 @@ function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [currentShortcut, setCurrentShortcut] = useState(DEFAULT_SHORTCUT);
   const [theme, setTheme] = useState<ThemeMode>(getInitialTheme);
+  const [visibilitySettings, setVisibilitySettings] = useState<VisibilitySettings>({
+    hide_menu_bar_icon: false,
+  });
 
   const themeStyles = theme === "dark"
     ? {
@@ -47,10 +54,16 @@ function App() {
     (async () => {
       try {
         const { invoke } = await import("@tauri-apps/api/core");
-        const saved = await invoke<string>("get_shortcut");
-        if (saved) {
-          setCurrentShortcut(saved);
+        const [savedShortcut, savedVisibilitySettings] = await Promise.all([
+          invoke<string>("get_shortcut"),
+          invoke<VisibilitySettings>("get_visibility_settings"),
+        ]);
+
+        if (savedShortcut) {
+          setCurrentShortcut(savedShortcut);
         }
+
+        setVisibilitySettings(savedVisibilitySettings);
       } catch {
         // Not in Tauri environment or command not available
       }
@@ -66,6 +79,19 @@ function App() {
       console.error("Failed to update shortcut:", e);
     }
     setShowSettings(false);
+  }, []);
+
+  const handleVisibilitySettingsChange = useCallback(async (nextSettings: VisibilitySettings) => {
+    setVisibilitySettings(nextSettings);
+
+    try {
+      const { invoke } = await import("@tauri-apps/api/core");
+      await invoke("update_visibility_settings", {
+        hideMenuBarIcon: nextSettings.hide_menu_bar_icon,
+      });
+    } catch (e) {
+      console.error("Failed to update visibility settings:", e);
+    }
   }, []);
 
   const handleCopy = useCallback(async (text: string) => {
@@ -192,6 +218,8 @@ function App() {
         <ShortcutRecorder
           currentShortcut={currentShortcut}
           onShortcutChange={handleShortcutChange}
+          visibilitySettings={visibilitySettings}
+          onVisibilitySettingsChange={handleVisibilitySettingsChange}
           onClose={() => setShowSettings(false)}
           theme={theme}
         />

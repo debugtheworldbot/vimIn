@@ -160,6 +160,9 @@ export default function TitleBar({
         </span>
         <button
           data-tauri-no-drag
+          onMouseDown={(e) => {
+            e.stopPropagation();
+          }}
           onClick={onThemeToggle}
           style={{
             width: "22px",
@@ -205,6 +208,9 @@ export default function TitleBar({
         </button>
         <button
           data-tauri-no-drag
+          onMouseDown={(e) => {
+            e.stopPropagation();
+          }}
           onClick={onSettingsClick}
           style={{
             width: "22px",
@@ -228,7 +234,7 @@ export default function TitleBar({
             e.currentTarget.style.color = colors.icon;
             e.currentTarget.style.backgroundColor = "transparent";
           }}
-          title="Shortcut settings"
+          title="Settings"
         >
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <rect x="3" y="6" width="18" height="12" rx="2" />

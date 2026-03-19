@@ -6,7 +6,8 @@ use serde::{Deserialize, Serialize};
 use tauri::{
     menu::{Menu, MenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
-    AppHandle, Emitter, Manager, PhysicalPosition, PhysicalSize, Position, Size,
+    ActivationPolicy, AppHandle, Emitter, Manager, PhysicalPosition, PhysicalSize, Position,
+    Size,
 };
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
 use tauri_plugin_liquid_glass::{GlassMaterialVariant, LiquidGlassConfig, LiquidGlassExt};
@@ -14,6 +15,7 @@ use tauri_plugin_liquid_glass::{GlassMaterialVariant, LiquidGlassConfig, LiquidG
 // ── Settings persistence ──────────────────────────────────────────────
 
 const DEFAULT_SHORTCUT: &str = "Alt+Space";
+const TRAY_ID: &str = "main-tray";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct WindowBounds {
@@ -28,6 +30,8 @@ struct WindowBounds {
 struct AppSettings {
     shortcut: String,
     window_bounds: Option<WindowBounds>,
+    hide_menu_bar_icon: bool,
+    hide_dock_icon: bool,
 }
 
 impl Default for AppSettings {
@@ -35,8 +39,15 @@ impl Default for AppSettings {
         Self {
             shortcut: DEFAULT_SHORTCUT.to_string(),
             window_bounds: None,
+            hide_menu_bar_icon: false,
+            hide_dock_icon: false,
         }
     }
+}
+
+#[derive(Debug, Clone, Serialize)]
+struct VisibilitySettings {
+    hide_menu_bar_icon: bool,
 }
 
 fn settings_path(app: &AppHandle) -> PathBuf {
@@ -244,6 +255,25 @@ fn hide_window_inner(app: &AppHandle) {
     }
 }
 
+fn current_visibility_settings(app: &AppHandle) -> VisibilitySettings {
+    let settings = load_settings(app);
+    VisibilitySettings {
+        hide_menu_bar_icon: settings.hide_menu_bar_icon,
+    }
+}
+
+fn apply_visibility_settings(app: &AppHandle, settings: &AppSettings) {
+    if let Some(tray) = app.tray_by_id(TRAY_ID) {
+        let _ = tray.set_visible(!settings.hide_menu_bar_icon);
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        let _ = settings;
+        let _ = app.set_activation_policy(ActivationPolicy::Accessory);
+    }
+}
+
 // ── Tauri commands ────────────────────────────────────────────────────
 
 #[tauri::command]
@@ -260,6 +290,11 @@ fn show_main_window(app: AppHandle) {
 fn get_shortcut(app: AppHandle) -> String {
     let settings = load_settings(&app);
     settings.shortcut
+}
+
+#[tauri::command]
+fn get_visibility_settings(app: AppHandle) -> VisibilitySettings {
+    current_visibility_settings(&app)
 }
 
 #[tauri::command]
@@ -301,6 +336,18 @@ fn update_shortcut(
     }
 
     Ok(())
+}
+
+#[tauri::command]
+fn update_visibility_settings(
+    app: AppHandle,
+    hide_menu_bar_icon: bool,
+) {
+    let mut settings = load_settings(&app);
+    settings.hide_menu_bar_icon = hide_menu_bar_icon;
+    settings.hide_dock_icon = true;
+    save_settings(&app, &settings);
+    apply_visibility_settings(&app, &settings);
 }
 
 // ── App state ─────────────────────────────────────────────────────────
@@ -363,7 +410,7 @@ pub fn run() {
             let show_item = MenuItem::with_id(app, "show", "Show VimInput", true, None::<&str>)?;
             let menu = Menu::with_items(app, &[&show_item, &quit_item])?;
 
-            let _tray = TrayIconBuilder::new()
+            let _tray = TrayIconBuilder::with_id(TRAY_ID)
                 .icon(app.default_window_icon().unwrap().clone())
                 .menu(&menu)
                 .show_menu_on_left_click(false)
@@ -388,6 +435,8 @@ pub fn run() {
                     }
                 })
                 .build(app)?;
+
+            apply_visibility_settings(app.handle(), &settings);
 
             // Handle window blur -> auto hide
             if let Some(window) = app.get_webview_window("main") {
@@ -430,7 +479,9 @@ pub fn run() {
             hide_window,
             show_main_window,
             get_shortcut,
-            update_shortcut
+            update_shortcut,
+            get_visibility_settings,
+            update_visibility_settings
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
