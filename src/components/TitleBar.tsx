@@ -66,7 +66,7 @@ export default function TitleBar({
         padding: "0 16px",
         height: "38px",
         backgroundColor: colors.background,
-        borderBottom: colors.border,
+        borderBottom: "none",
         userSelect: "none",
         WebkitUserSelect: "none",
         cursor: "grab",

@@ -24,28 +24,34 @@ const darkTheme = EditorView.theme({
   },
   ".cm-content": {
     caretColor: "#a78bfa",
-    padding: "12px 16px",
+    padding: "12px 0",
     minHeight: "200px",
+  },
+  ".cm-line": {
+    padding: "0 16px 0 0",
   },
   ".cm-cursor, .cm-dropCursor": {
     borderLeftColor: "#a78bfa",
     borderLeftWidth: "2px",
   },
-  ".cm-selectionBackground, ::selection": {
+  ".cm-selectionBackground": {
     backgroundColor: "rgba(167, 139, 250, 0.3) !important",
+  },
+  "& ::selection": {
+    backgroundColor: "transparent !important",
   },
   ".cm-activeLine": {
     backgroundColor: "rgba(255, 255, 255, 0.04)",
   },
   ".cm-gutters": {
     backgroundColor: "transparent",
-    color: "#52525b",
+    color: "#a1a1aa",
     border: "none",
     paddingLeft: "8px",
   },
   ".cm-activeLineGutter": {
     backgroundColor: "transparent",
-    color: "#a1a1aa",
+    color: "#e4e4e7",
   },
   ".cm-lineNumbers .cm-gutterElement": {
     minWidth: "2em",
@@ -107,15 +113,21 @@ const lightTheme = EditorView.theme({
   },
   ".cm-content": {
     caretColor: "#2563eb",
-    padding: "12px 16px",
+    padding: "12px 0",
     minHeight: "200px",
+  },
+  ".cm-line": {
+    padding: "0 16px 0 0",
   },
   ".cm-cursor, .cm-dropCursor": {
     borderLeftColor: "#2563eb",
     borderLeftWidth: "2px",
   },
-  ".cm-selectionBackground, ::selection": {
+  ".cm-selectionBackground": {
     backgroundColor: "rgba(37, 99, 235, 0.18) !important",
+  },
+  "& ::selection": {
+    backgroundColor: "transparent !important",
   },
   ".cm-activeLine": {
     backgroundColor: "rgba(24, 24, 27, 0.04)",
