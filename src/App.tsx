@@ -26,13 +26,13 @@ function App() {
 
   const themeStyles = theme === "dark"
     ? {
-        appBackground: "rgba(19, 20, 23, 0.22)",
-        border: "1px solid rgba(255, 255, 255, 0.16)",
+        appBackground: "rgba(19, 20, 23, 0.55)",
+        border: "1px solid rgba(255, 255, 255, 0.08)",
         shadow: "0 10px 24px rgba(0, 0, 0, 0.08), 0 28px 90px rgba(0, 0, 0, 0.24), 0 48px 140px rgba(0, 0, 0, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.16)",
       }
     : {
         appBackground: "rgba(255, 255, 255, 0.18)",
-        border: "1px solid rgba(255, 255, 255, 0.55)",
+        border: "1px solid rgba(255, 255, 255, 0.22)",
         shadow: "0 8px 20px rgba(15, 23, 42, 0.06), 0 26px 80px rgba(15, 23, 42, 0.12), 0 42px 130px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.78)",
       };
 
@@ -156,47 +156,36 @@ function App() {
     <div
       style={{
         display: "flex",
+        flexDirection: "column",
         height: "100vh",
         width: "100vw",
-        padding: "4px",
+        backgroundColor: themeStyles.appBackground,
+        backdropFilter: "blur(26px) saturate(1.35)",
+        WebkitBackdropFilter: "blur(26px) saturate(1.35)",
+        borderRadius: "20px",
         overflow: "hidden",
-        backgroundColor: "transparent",
+        border: themeStyles.border,
+        boxShadow: themeStyles.shadow,
       }}
     >
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          height: "100%",
-          width: "100%",
-          backgroundColor: themeStyles.appBackground,
-          backdropFilter: "blur(26px) saturate(1.35)",
-          WebkitBackdropFilter: "blur(26px) saturate(1.35)",
-          borderRadius: "18px",
-          overflow: "hidden",
-          border: themeStyles.border,
-          boxShadow: themeStyles.shadow,
-        }}
-      >
-        <TitleBar
-          onClose={handleClose}
-          onSettingsClick={() => setShowSettings(true)}
-          shortcutDisplay={formatShortcutDisplay(currentShortcut)}
-          theme={theme}
-          onThemeToggle={() => setTheme((current) => current === "dark" ? "light" : "dark")}
-        />
-        <VimEditor onCopy={handleCopy} onModeChange={handleModeChange} theme={theme} />
-        <StatusBar mode={mode} copied={copied} onCopyClick={handleCopyClick} theme={theme} />
+      <TitleBar
+        onClose={handleClose}
+        onSettingsClick={() => setShowSettings(true)}
+        shortcutDisplay={formatShortcutDisplay(currentShortcut)}
+        theme={theme}
+        onThemeToggle={() => setTheme((current) => current === "dark" ? "light" : "dark")}
+      />
+      <VimEditor onCopy={handleCopy} onModeChange={handleModeChange} theme={theme} />
+      <StatusBar mode={mode} copied={copied} onCopyClick={handleCopyClick} theme={theme} />
 
-        {showSettings && (
-          <ShortcutRecorder
-            currentShortcut={currentShortcut}
-            onShortcutChange={handleShortcutChange}
-            onClose={() => setShowSettings(false)}
-            theme={theme}
-          />
-        )}
-      </div>
+      {showSettings && (
+        <ShortcutRecorder
+          currentShortcut={currentShortcut}
+          onShortcutChange={handleShortcutChange}
+          onClose={() => setShowSettings(false)}
+          theme={theme}
+        />
+      )}
     </div>
   );
 }

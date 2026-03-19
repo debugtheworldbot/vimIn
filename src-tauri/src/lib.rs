@@ -396,7 +396,7 @@ pub fn run() {
                     &window,
                     LiquidGlassConfig {
                         enabled: true,
-                        corner_radius: 16.0,
+                        corner_radius: 20.0,
                         tint_color: Some("#FFFFFF08".into()),
                         variant: GlassMaterialVariant::Clear,
                     },
