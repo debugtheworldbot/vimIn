@@ -48,13 +48,31 @@ jobs:
       - name: Sync Tauri version files
         run: pnpm run sync-version
 
-      - name: Build app and publish release
-        uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build macOS app bundle
+        run: |
+          pnpm tauri build --bundles app
+
+      - name: Re-sign app bundle with ad-hoc signature
+        run: |
+          APP_PATH="src-tauri/target/release/bundle/macos/VimInput.app"
+          codesign --force --deep --sign - --entitlements src-tauri/entitlements.plist "$APP_PATH"
+          codesign --verify --deep --strict --verbose=2 "$APP_PATH"
+
+      - name: Package signed app
+        run: |
+          mkdir -p dist-release
+          ditto -c -k --keepParent src-tauri/target/release/bundle/macos/VimInput.app "dist-release/VimInput-${APP_VERSION}-macos.zip"
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
         with:
-          tagName: v${{ env.APP_VERSION }}
-          releaseName: "VimInput v${{ env.APP_VERSION }}"
-          releaseBody: "Automated release for v${{ env.APP_VERSION }}"
-          releaseDraft: false
+          tag_name: v${{ env.APP_VERSION }}
+          name: "VimInput v${{ env.APP_VERSION }}"
+          body: |
+            Automated release for v${{ env.APP_VERSION }}
+
+            Note: The macOS app is ad-hoc signed, not notarized.
+            If Gatekeeper blocks launch, right-click the app and choose Open once.
+          draft: false
           prerelease: ${{ contains(env.APP_VERSION, '-') }}
+          files: dist-release/VimInput-${{ env.APP_VERSION }}-macos.zip
