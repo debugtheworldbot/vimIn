@@ -34,7 +34,9 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Read version from package.json
-        run: echo "APP_VERSION=$(node -e \"console.log(JSON.parse(require('node:fs').readFileSync('package.json', 'utf8')).version)\")" >> "$GITHUB_ENV"
+        run: |
+          APP_VERSION="$(node -p "JSON.parse(require('node:fs').readFileSync('package.json', 'utf8')).version")"
+          echo "APP_VERSION=${APP_VERSION}" >> "$GITHUB_ENV"
 
       - name: Verify tag matches package.json version
         run: |
