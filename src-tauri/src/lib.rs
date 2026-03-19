@@ -1,12 +1,12 @@
-use std::{fs, thread, time::Duration};
 use std::path::PathBuf;
 use std::sync::Mutex;
+use std::{fs, thread, time::Duration};
 
 use serde::{Deserialize, Serialize};
 use tauri::{
-    AppHandle, Emitter, Manager,
     menu::{Menu, MenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
+    AppHandle, Emitter, Manager, PhysicalPosition, PhysicalSize, Position, Size,
 };
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
 use tauri_plugin_liquid_glass::{GlassMaterialVariant, LiquidGlassConfig, LiquidGlassExt};
@@ -16,14 +16,25 @@ use tauri_plugin_liquid_glass::{GlassMaterialVariant, LiquidGlassConfig, LiquidG
 const DEFAULT_SHORTCUT: &str = "Alt+Space";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+struct WindowBounds {
+    x: i32,
+    y: i32,
+    width: u32,
+    height: u32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)]
 struct AppSettings {
     shortcut: String,
+    window_bounds: Option<WindowBounds>,
 }
 
 impl Default for AppSettings {
     fn default() -> Self {
         Self {
             shortcut: DEFAULT_SHORTCUT.to_string(),
+            window_bounds: None,
         }
     }
 }
@@ -163,12 +174,50 @@ fn parse_shortcut(s: &str) -> Option<Shortcut> {
 
 // ── Window helpers ────────────────────────────────────────────────────
 
+fn apply_saved_window_bounds(app: &AppHandle) {
+    let settings = load_settings(app);
+
+    if let (Some(window), Some(bounds)) = (app.get_webview_window("main"), settings.window_bounds) {
+        let _ = window.set_size(Size::Physical(PhysicalSize::new(
+            bounds.width,
+            bounds.height,
+        )));
+        let _ = window.set_position(Position::Physical(PhysicalPosition::new(
+            bounds.x, bounds.y,
+        )));
+    }
+}
+
+fn persist_window_bounds(app: &AppHandle) {
+    if let Some(window) = app.get_webview_window("main") {
+        let Ok(position) = window.outer_position() else {
+            return;
+        };
+        let Ok(size) = window.inner_size() else {
+            return;
+        };
+
+        let mut settings = load_settings(app);
+        settings.window_bounds = Some(WindowBounds {
+            x: position.x,
+            y: position.y,
+            width: size.width,
+            height: size.height,
+        });
+        save_settings(app, &settings);
+    }
+}
+
 fn toggle_window(app: &AppHandle) {
     if let Some(window) = app.get_webview_window("main") {
         if window.is_visible().unwrap_or(false) {
             let _ = window.hide();
         } else {
-            let _ = window.center();
+            if load_settings(app).window_bounds.is_some() {
+                apply_saved_window_bounds(app);
+            } else {
+                let _ = window.center();
+            }
             let _ = window.show();
             let _ = window.set_focus();
             let _ = window.emit("window-shown", ());
@@ -178,7 +227,11 @@ fn toggle_window(app: &AppHandle) {
 
 fn show_window(app: &AppHandle) {
     if let Some(window) = app.get_webview_window("main") {
-        let _ = window.center();
+        if load_settings(app).window_bounds.is_some() {
+            apply_saved_window_bounds(app);
+        } else {
+            let _ = window.center();
+        }
         let _ = window.show();
         let _ = window.set_focus();
         let _ = window.emit("window-shown", ());
@@ -210,7 +263,11 @@ fn get_shortcut(app: AppHandle) -> String {
 }
 
 #[tauri::command]
-fn update_shortcut(app: AppHandle, shortcut: String, state: tauri::State<'_, ShortcutState_>) -> Result<(), String> {
+fn update_shortcut(
+    app: AppHandle,
+    shortcut: String,
+    state: tauri::State<'_, ShortcutState_>,
+) -> Result<(), String> {
     // Parse the new shortcut
     let new_sc = parse_shortcut(&shortcut).ok_or("Invalid shortcut format")?;
 
@@ -233,9 +290,8 @@ fn update_shortcut(app: AppHandle, shortcut: String, state: tauri::State<'_, Sho
         .map_err(|e| format!("Failed to register shortcut: {}", e))?;
 
     // Save to settings
-    let settings = AppSettings {
-        shortcut: shortcut.clone(),
-    };
+    let mut settings = load_settings(&app);
+    settings.shortcut = shortcut.clone();
     save_settings(&app, &settings);
 
     // Update state
@@ -340,15 +396,19 @@ pub fn run() {
                     &window,
                     LiquidGlassConfig {
                         enabled: true,
-                        corner_radius: 18.0,
+                        corner_radius: 16.0,
                         tint_color: Some("#FFFFFF08".into()),
                         variant: GlassMaterialVariant::Clear,
                     },
                 );
 
                 let event_window = window.clone();
-                window.on_window_event(move |event| {
-                    if let tauri::WindowEvent::Focused(false) = event {
+                let event_app = app.handle().clone();
+                window.on_window_event(move |event| match event {
+                    tauri::WindowEvent::Moved(_) | tauri::WindowEvent::Resized(_) => {
+                        persist_window_bounds(&event_app);
+                    }
+                    tauri::WindowEvent::Focused(false) => {
                         let window = event_window.clone();
                         thread::spawn(move || {
                             thread::sleep(Duration::from_millis(150));
@@ -360,6 +420,7 @@ pub fn run() {
                             let _ = window.hide();
                         });
                     }
+                    _ => {}
                 });
             }
 
