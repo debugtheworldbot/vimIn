@@ -2,6 +2,7 @@ interface StatusBarProps {
   mode: string;
   copied: boolean;
   onCopyClick: () => void;
+  theme: "dark" | "light";
 }
 
 const modeColors: Record<string, string> = {
@@ -12,8 +13,36 @@ const modeColors: Record<string, string> = {
   "V-BLOCK": "#f87171",
 };
 
-export default function StatusBar({ mode, copied, onCopyClick }: StatusBarProps) {
+export default function StatusBar({ mode, copied, onCopyClick, theme }: StatusBarProps) {
   const modeColor = modeColors[mode] || "#a78bfa";
+  const isDark = theme === "dark";
+  const colors = isDark
+    ? {
+        background: "rgba(24, 24, 27, 0.95)",
+        border: "1px solid rgba(255, 255, 255, 0.06)",
+        appText: "#71717a",
+        hintText: "#52525b",
+        buttonBg: "rgba(255, 255, 255, 0.06)",
+        buttonBgHover: "rgba(255, 255, 255, 0.1)",
+        buttonText: "#a1a1aa",
+        buttonTextHover: "#e4e4e7",
+        kbdBg: "rgba(255, 255, 255, 0.08)",
+        kbdBorder: "1px solid rgba(255, 255, 255, 0.1)",
+        kbdText: "#71717a",
+      }
+    : {
+        background: "rgba(250, 250, 249, 0.96)",
+        border: "1px solid rgba(24, 24, 27, 0.08)",
+        appText: "#78716c",
+        hintText: "#a8a29e",
+        buttonBg: "rgba(24, 24, 27, 0.05)",
+        buttonBgHover: "rgba(24, 24, 27, 0.1)",
+        buttonText: "#57534e",
+        buttonTextHover: "#1c1917",
+        kbdBg: "rgba(24, 24, 27, 0.05)",
+        kbdBorder: "1px solid rgba(24, 24, 27, 0.08)",
+        kbdText: "#78716c",
+      };
 
   return (
     <div
@@ -23,8 +52,8 @@ export default function StatusBar({ mode, copied, onCopyClick }: StatusBarProps)
         justifyContent: "space-between",
         padding: "0 12px",
         height: "36px",
-        backgroundColor: "rgba(24, 24, 27, 0.95)",
-        borderTop: "1px solid rgba(255, 255, 255, 0.06)",
+        backgroundColor: colors.background,
+        borderTop: colors.border,
         userSelect: "none",
         WebkitUserSelect: "none",
         flexShrink: 0,
@@ -52,7 +81,7 @@ export default function StatusBar({ mode, copied, onCopyClick }: StatusBarProps)
         </div>
         <span
           style={{
-            color: "#71717a",
+            color: colors.appText,
             fontSize: "11px",
             fontFamily: "'SF Mono', Menlo, Monaco, monospace",
           }}
@@ -65,7 +94,7 @@ export default function StatusBar({ mode, copied, onCopyClick }: StatusBarProps)
       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
         <span
           style={{
-            color: "#52525b",
+            color: colors.hintText,
             fontSize: "11px",
             fontFamily: "'SF Mono', Menlo, Monaco, monospace",
           }}
@@ -80,11 +109,11 @@ export default function StatusBar({ mode, copied, onCopyClick }: StatusBarProps)
             gap: "5px",
             padding: "3px 10px",
             borderRadius: "5px",
-            border: "1px solid rgba(255, 255, 255, 0.1)",
+            border: colors.kbdBorder,
             backgroundColor: copied
               ? "rgba(52, 211, 153, 0.15)"
-              : "rgba(255, 255, 255, 0.06)",
-            color: copied ? "#34d399" : "#a1a1aa",
+              : colors.buttonBg,
+            color: copied ? "#34d399" : colors.buttonText,
             fontSize: "11px",
             fontFamily: "'SF Mono', Menlo, Monaco, monospace",
             cursor: "pointer",
@@ -93,14 +122,14 @@ export default function StatusBar({ mode, copied, onCopyClick }: StatusBarProps)
           }}
           onMouseEnter={(e) => {
             if (!copied) {
-              e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
-              e.currentTarget.style.color = "#e4e4e7";
+              e.currentTarget.style.backgroundColor = colors.buttonBgHover;
+              e.currentTarget.style.color = colors.buttonTextHover;
             }
           }}
           onMouseLeave={(e) => {
             if (!copied) {
-              e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.06)";
-              e.currentTarget.style.color = "#a1a1aa";
+              e.currentTarget.style.backgroundColor = colors.buttonBg;
+              e.currentTarget.style.color = colors.buttonText;
             }
           }}
         >
@@ -122,9 +151,9 @@ export default function StatusBar({ mode, copied, onCopyClick }: StatusBarProps)
                 fontSize: "10px",
                 padding: "1px 4px",
                 borderRadius: "3px",
-                backgroundColor: "rgba(255, 255, 255, 0.08)",
-                border: "1px solid rgba(255, 255, 255, 0.1)",
-                color: "#71717a",
+                backgroundColor: colors.kbdBg,
+                border: colors.kbdBorder,
+                color: colors.kbdText,
                 marginLeft: "2px",
               }}>
                 ⌘⏎

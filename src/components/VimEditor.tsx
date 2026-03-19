@@ -10,6 +10,7 @@ import { markdown } from "@codemirror/lang-markdown";
 interface VimEditorProps {
   onCopy: (text: string) => void;
   onModeChange: (mode: string) => void;
+  theme: "dark" | "light";
 }
 
 // Dark theme for the editor
@@ -96,7 +97,88 @@ const darkTheme = EditorView.theme({
   },
 }, { dark: true });
 
-export default function VimEditor({ onCopy, onModeChange }: VimEditorProps) {
+const lightTheme = EditorView.theme({
+  "&": {
+    backgroundColor: "transparent",
+    color: "#292524",
+    fontSize: "14px",
+    fontFamily: "'SF Mono', 'Fira Code', 'JetBrains Mono', 'Cascadia Code', Menlo, Monaco, 'Courier New', monospace",
+    height: "100%",
+  },
+  ".cm-content": {
+    caretColor: "#2563eb",
+    padding: "12px 16px",
+    minHeight: "200px",
+  },
+  ".cm-cursor, .cm-dropCursor": {
+    borderLeftColor: "#2563eb",
+    borderLeftWidth: "2px",
+  },
+  ".cm-selectionBackground, ::selection": {
+    backgroundColor: "rgba(37, 99, 235, 0.18) !important",
+  },
+  ".cm-activeLine": {
+    backgroundColor: "rgba(24, 24, 27, 0.04)",
+  },
+  ".cm-gutters": {
+    backgroundColor: "transparent",
+    color: "#a8a29e",
+    border: "none",
+    paddingLeft: "8px",
+  },
+  ".cm-activeLineGutter": {
+    backgroundColor: "transparent",
+    color: "#57534e",
+  },
+  ".cm-lineNumbers .cm-gutterElement": {
+    minWidth: "2em",
+    padding: "0 8px 0 0",
+  },
+  ".cm-fat-cursor": {
+    background: "rgba(59, 130, 246, 0.28) !important",
+    color: "#1c1917 !important",
+  },
+  "&:not(.cm-focused) .cm-fat-cursor": {
+    background: "none !important",
+    outline: "solid 1px rgba(37, 99, 235, 0.45) !important",
+    color: "transparent !important",
+  },
+  ".cm-vim-panel": {
+    backgroundColor: "rgba(245, 245, 244, 0.98)",
+    color: "#292524",
+    padding: "4px 12px",
+    fontFamily: "'SF Mono', Menlo, Monaco, monospace",
+    fontSize: "13px",
+    borderTop: "1px solid rgba(24, 24, 27, 0.08)",
+  },
+  ".cm-vim-panel input": {
+    backgroundColor: "transparent",
+    color: "#292524",
+    border: "none",
+    outline: "none",
+    fontFamily: "'SF Mono', Menlo, Monaco, monospace",
+    fontSize: "13px",
+  },
+  ".cm-scroller": {
+    overflow: "auto",
+  },
+  ".cm-scroller::-webkit-scrollbar": {
+    width: "6px",
+    height: "6px",
+  },
+  ".cm-scroller::-webkit-scrollbar-track": {
+    background: "transparent",
+  },
+  ".cm-scroller::-webkit-scrollbar-thumb": {
+    background: "rgba(24, 24, 27, 0.12)",
+    borderRadius: "3px",
+  },
+  ".cm-scroller::-webkit-scrollbar-thumb:hover": {
+    background: "rgba(24, 24, 27, 0.2)",
+  },
+}, { dark: false });
+
+export default function VimEditor({ onCopy, onModeChange, theme }: VimEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
 
@@ -179,7 +261,7 @@ export default function VimEditor({ onCopy, onModeChange }: VimEditorProps) {
           ...defaultKeymap,
           ...historyKeymap,
         ]),
-        darkTheme,
+        theme === "dark" ? darkTheme : lightTheme,
         modeChangeListener,
         EditorView.lineWrapping,
       ],
@@ -200,7 +282,7 @@ export default function VimEditor({ onCopy, onModeChange }: VimEditorProps) {
     return () => {
       view.destroy();
     };
-  }, [handleCopy, onModeChange]);
+  }, [handleCopy, onModeChange, theme]);
 
   // Expose focus method and getText
   useEffect(() => {

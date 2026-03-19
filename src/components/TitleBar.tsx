@@ -1,28 +1,77 @@
+import type { MouseEvent as ReactMouseEvent } from "react";
+
 interface TitleBarProps {
   onClose: () => void;
   onSettingsClick: () => void;
   shortcutDisplay: string;
+  theme: "dark" | "light";
+  onThemeToggle: () => void;
 }
 
-export default function TitleBar({ onClose, onSettingsClick, shortcutDisplay }: TitleBarProps) {
+export default function TitleBar({
+  onClose,
+  onSettingsClick,
+  shortcutDisplay,
+  theme,
+  onThemeToggle,
+}: TitleBarProps) {
+  const isDark = theme === "dark";
+  const colors = isDark
+    ? {
+        background: "rgba(24, 24, 27, 0.95)",
+        border: "1px solid rgba(255, 255, 255, 0.06)",
+        title: "#71717a",
+        shortcut: "#3f3f46",
+        icon: "#52525b",
+        iconHover: "#a1a1aa",
+        iconHoverBg: "rgba(255, 255, 255, 0.06)",
+        trafficIdle: "rgba(255, 255, 255, 0.08)",
+      }
+    : {
+        background: "rgba(250, 250, 249, 0.96)",
+        border: "1px solid rgba(24, 24, 27, 0.08)",
+        title: "#57534e",
+        shortcut: "#a8a29e",
+        icon: "#78716c",
+        iconHover: "#292524",
+        iconHoverBg: "rgba(24, 24, 27, 0.06)",
+        trafficIdle: "rgba(24, 24, 27, 0.08)",
+      };
+
+  const handleDragStart = async (event: ReactMouseEvent<HTMLElement>) => {
+    const target = event.target as HTMLElement | null;
+    if (target?.closest("button")) {
+      return;
+    }
+
+    try {
+      const { getCurrentWindow } = await import("@tauri-apps/api/window");
+      await getCurrentWindow().startDragging();
+    } catch {
+      // Not in Tauri environment
+    }
+  };
+
   return (
     <div
       data-tauri-drag-region
+      onMouseDown={(event) => {
+        void handleDragStart(event);
+      }}
       style={{
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
         padding: "0 12px",
         height: "32px",
-        backgroundColor: "rgba(24, 24, 27, 0.95)",
-        borderBottom: "1px solid rgba(255, 255, 255, 0.06)",
+        backgroundColor: colors.background,
+        borderBottom: colors.border,
         userSelect: "none",
         WebkitUserSelect: "none",
         cursor: "grab",
         flexShrink: 0,
       }}
     >
-      {/* Left: close button (macOS style) */}
       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
         <button
           onClick={onClose}
@@ -56,7 +105,7 @@ export default function TitleBar({ onClose, onSettingsClick, shortcutDisplay }: 
             width: "12px",
             height: "12px",
             borderRadius: "50%",
-            backgroundColor: "rgba(255, 255, 255, 0.08)",
+            backgroundColor: colors.trafficIdle,
           }}
         />
         <div
@@ -64,16 +113,15 @@ export default function TitleBar({ onClose, onSettingsClick, shortcutDisplay }: 
             width: "12px",
             height: "12px",
             borderRadius: "50%",
-            backgroundColor: "rgba(255, 255, 255, 0.08)",
+            backgroundColor: colors.trafficIdle,
           }}
         />
       </div>
 
-      {/* Center: title */}
       <span
         data-tauri-drag-region
         style={{
-          color: "#71717a",
+          color: colors.title,
           fontSize: "12px",
           fontWeight: 500,
           fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif",
@@ -83,11 +131,10 @@ export default function TitleBar({ onClose, onSettingsClick, shortcutDisplay }: 
         VimInput
       </span>
 
-      {/* Right: shortcut hint + settings gear */}
       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
         <span
           style={{
-            color: "#3f3f46",
+            color: colors.shortcut,
             fontSize: "10px",
             fontFamily: "'SF Mono', Menlo, Monaco, monospace",
           }}
@@ -95,11 +142,11 @@ export default function TitleBar({ onClose, onSettingsClick, shortcutDisplay }: 
           {shortcutDisplay}
         </span>
         <button
-          onClick={onSettingsClick}
+          onClick={onThemeToggle}
           style={{
-            width: "18px",
-            height: "18px",
-            borderRadius: "4px",
+            width: "22px",
+            height: "22px",
+            borderRadius: "6px",
             border: "none",
             backgroundColor: "transparent",
             cursor: "pointer",
@@ -107,22 +154,69 @@ export default function TitleBar({ onClose, onSettingsClick, shortcutDisplay }: 
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            color: "#52525b",
+            color: colors.icon,
             transition: "all 0.15s ease",
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.color = "#a1a1aa";
-            e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.06)";
+            e.currentTarget.style.color = colors.iconHover;
+            e.currentTarget.style.backgroundColor = colors.iconHoverBg;
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.color = "#52525b";
+            e.currentTarget.style.color = colors.icon;
             e.currentTarget.style.backgroundColor = "transparent";
           }}
-          title="Settings"
+          title={isDark ? "Switch to light mode" : "Switch to dark mode"}
         >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="3" />
-            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+          {isDark ? (
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="4" />
+              <path d="M12 2v2" />
+              <path d="M12 20v2" />
+              <path d="m4.93 4.93 1.41 1.41" />
+              <path d="m17.66 17.66 1.41 1.41" />
+              <path d="M2 12h2" />
+              <path d="M20 12h2" />
+              <path d="m6.34 17.66-1.41 1.41" />
+              <path d="m19.07 4.93-1.41 1.41" />
+            </svg>
+          ) : (
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3c0 4.97 4.03 9 9 9 .27 0 .53-.07.79-.21" />
+            </svg>
+          )}
+        </button>
+        <button
+          onClick={onSettingsClick}
+          style={{
+            width: "22px",
+            height: "22px",
+            borderRadius: "6px",
+            border: "none",
+            backgroundColor: "transparent",
+            cursor: "pointer",
+            padding: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: colors.icon,
+            transition: "all 0.15s ease",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = colors.iconHover;
+            e.currentTarget.style.backgroundColor = colors.iconHoverBg;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = colors.icon;
+            e.currentTarget.style.backgroundColor = "transparent";
+          }}
+          title="Shortcut settings"
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="6" width="18" height="12" rx="2" />
+            <path d="M7 10h.01" />
+            <path d="M11 10h.01" />
+            <path d="M15 10h.01" />
+            <path d="M7 14h10" />
           </svg>
         </button>
       </div>

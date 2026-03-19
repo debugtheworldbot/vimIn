@@ -4,6 +4,7 @@ interface ShortcutRecorderProps {
   currentShortcut: string; // e.g. "Alt+Space"
   onShortcutChange: (shortcut: string) => void;
   onClose: () => void;
+  theme: "dark" | "light";
 }
 
 // Map browser key event to Tauri-compatible key names
@@ -72,10 +73,42 @@ function formatShortcutDisplay(shortcut: string): string {
     .replace(/\+/g, " ");
 }
 
-export default function ShortcutRecorder({ currentShortcut, onShortcutChange, onClose }: ShortcutRecorderProps) {
+export default function ShortcutRecorder({ currentShortcut, onShortcutChange, onClose, theme }: ShortcutRecorderProps) {
   const [recording, setRecording] = useState(false);
   const [pendingShortcut, setPendingShortcut] = useState<string | null>(null);
   const recorderRef = useRef<HTMLDivElement>(null);
+  const isDark = theme === "dark";
+  const colors = isDark
+    ? {
+        overlay: "rgba(0, 0, 0, 0.6)",
+        modal: "rgba(39, 39, 42, 0.98)",
+        border: "1px solid rgba(255, 255, 255, 0.1)",
+        subtleBorder: "1px solid rgba(255, 255, 255, 0.06)",
+        title: "#e4e4e7",
+        body: "#71717a",
+        displayBorder: "1px solid rgba(255, 255, 255, 0.12)",
+        displayBg: "rgba(255, 255, 255, 0.04)",
+        text: "#e4e4e7",
+        muted: "#52525b",
+        buttonBorder: "1px solid rgba(255, 255, 255, 0.1)",
+        buttonText: "#a1a1aa",
+        buttonHover: "rgba(255, 255, 255, 0.06)",
+      }
+    : {
+        overlay: "rgba(24, 24, 27, 0.2)",
+        modal: "rgba(255, 255, 255, 0.98)",
+        border: "1px solid rgba(24, 24, 27, 0.08)",
+        subtleBorder: "1px solid rgba(24, 24, 27, 0.08)",
+        title: "#1c1917",
+        body: "#78716c",
+        displayBorder: "1px solid rgba(24, 24, 27, 0.12)",
+        displayBg: "rgba(24, 24, 27, 0.03)",
+        text: "#292524",
+        muted: "#a8a29e",
+        buttonBorder: "1px solid rgba(24, 24, 27, 0.1)",
+        buttonText: "#57534e",
+        buttonHover: "rgba(24, 24, 27, 0.06)",
+      };
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (!recording) return;
@@ -137,7 +170,7 @@ export default function ShortcutRecorder({ currentShortcut, onShortcutChange, on
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: "rgba(0, 0, 0, 0.6)",
+        backgroundColor: colors.overlay,
         zIndex: 1000,
         backdropFilter: "blur(4px)",
       }}
@@ -149,9 +182,9 @@ export default function ShortcutRecorder({ currentShortcut, onShortcutChange, on
         ref={recorderRef}
         style={{
           width: "360px",
-          backgroundColor: "rgba(39, 39, 42, 0.98)",
+          backgroundColor: colors.modal,
           borderRadius: "12px",
-          border: "1px solid rgba(255, 255, 255, 0.1)",
+          border: colors.border,
           boxShadow: "0 25px 50px rgba(0, 0, 0, 0.5)",
           overflow: "hidden",
         }}
@@ -159,13 +192,13 @@ export default function ShortcutRecorder({ currentShortcut, onShortcutChange, on
         {/* Header */}
         <div style={{
           padding: "16px 20px 12px",
-          borderBottom: "1px solid rgba(255, 255, 255, 0.06)",
+          borderBottom: colors.subtleBorder,
         }}>
           <h3 style={{
             margin: 0,
             fontSize: "14px",
             fontWeight: 600,
-            color: "#e4e4e7",
+            color: colors.title,
             fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif",
           }}>
             Set Global Shortcut
@@ -173,7 +206,7 @@ export default function ShortcutRecorder({ currentShortcut, onShortcutChange, on
           <p style={{
             margin: "6px 0 0",
             fontSize: "12px",
-            color: "#71717a",
+            color: colors.body,
             fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif",
           }}>
             Choose a key combination to toggle VimInput
@@ -192,10 +225,10 @@ export default function ShortcutRecorder({ currentShortcut, onShortcutChange, on
               borderRadius: "8px",
               border: recording
                 ? "2px solid #a78bfa"
-                : "1px solid rgba(255, 255, 255, 0.12)",
+                : colors.displayBorder,
               backgroundColor: recording
                 ? "rgba(167, 139, 250, 0.08)"
-                : "rgba(255, 255, 255, 0.04)",
+                : colors.displayBg,
               cursor: "pointer",
               transition: "all 0.2s ease",
             }}
@@ -212,7 +245,7 @@ export default function ShortcutRecorder({ currentShortcut, onShortcutChange, on
             ) : (
               <span style={{
                 fontSize: "18px",
-                color: "#e4e4e7",
+                color: colors.text,
                 fontFamily: "'SF Mono', Menlo, Monaco, monospace",
                 fontWeight: 500,
                 letterSpacing: "2px",
@@ -226,7 +259,7 @@ export default function ShortcutRecorder({ currentShortcut, onShortcutChange, on
           <p style={{
             margin: "10px 0 0",
             fontSize: "11px",
-            color: "#52525b",
+            color: colors.muted,
             textAlign: "center",
             fontFamily: "'SF Mono', Menlo, Monaco, monospace",
           }}>
@@ -243,23 +276,23 @@ export default function ShortcutRecorder({ currentShortcut, onShortcutChange, on
           gap: "8px",
           padding: "12px 20px 16px",
           justifyContent: "flex-end",
-          borderTop: "1px solid rgba(255, 255, 255, 0.06)",
+          borderTop: colors.subtleBorder,
         }}>
           <button
             onClick={handleCancel}
             style={{
               padding: "6px 16px",
               borderRadius: "6px",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
+              border: colors.buttonBorder,
               backgroundColor: "transparent",
-              color: "#a1a1aa",
+              color: colors.buttonText,
               fontSize: "12px",
               fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif",
               cursor: "pointer",
               transition: "all 0.15s ease",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.06)";
+              e.currentTarget.style.backgroundColor = colors.buttonHover;
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.backgroundColor = "transparent";

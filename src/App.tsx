@@ -5,6 +5,7 @@ import TitleBar from "./components/TitleBar";
 import ShortcutRecorder from "./components/ShortcutRecorder";
 
 const DEFAULT_SHORTCUT = "Alt+Space";
+type ThemeMode = "dark" | "light";
 
 function formatShortcutDisplay(shortcut: string): string {
   return shortcut
@@ -21,6 +22,19 @@ function App() {
   const [copied, setCopied] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [currentShortcut, setCurrentShortcut] = useState(DEFAULT_SHORTCUT);
+  const [theme, setTheme] = useState<ThemeMode>("dark");
+
+  const themeStyles = theme === "dark"
+    ? {
+        appBackground: "rgba(24, 24, 27, 0.97)",
+        border: "1px solid rgba(255, 255, 255, 0.08)",
+        shadow: "0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05)",
+      }
+    : {
+        appBackground: "rgba(250, 250, 249, 0.98)",
+        border: "1px solid rgba(24, 24, 27, 0.08)",
+        shadow: "0 20px 45px -18px rgba(24, 24, 27, 0.22), 0 0 0 1px rgba(255, 255, 255, 0.6)",
+      };
 
   // Load saved shortcut on mount
   useEffect(() => {
@@ -145,26 +159,29 @@ function App() {
         flexDirection: "column",
         height: "100vh",
         width: "100vw",
-        backgroundColor: "rgba(24, 24, 27, 0.97)",
+        backgroundColor: themeStyles.appBackground,
         borderRadius: "12px",
         overflow: "hidden",
-        border: "1px solid rgba(255, 255, 255, 0.08)",
-        boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05)",
+        border: themeStyles.border,
+        boxShadow: themeStyles.shadow,
       }}
     >
       <TitleBar
         onClose={handleClose}
         onSettingsClick={() => setShowSettings(true)}
         shortcutDisplay={formatShortcutDisplay(currentShortcut)}
+        theme={theme}
+        onThemeToggle={() => setTheme((current) => current === "dark" ? "light" : "dark")}
       />
-      <VimEditor onCopy={handleCopy} onModeChange={handleModeChange} />
-      <StatusBar mode={mode} copied={copied} onCopyClick={handleCopyClick} />
+      <VimEditor onCopy={handleCopy} onModeChange={handleModeChange} theme={theme} />
+      <StatusBar mode={mode} copied={copied} onCopyClick={handleCopyClick} theme={theme} />
 
       {showSettings && (
         <ShortcutRecorder
           currentShortcut={currentShortcut}
           onShortcutChange={handleShortcutChange}
           onClose={() => setShowSettings(false)}
+          theme={theme}
         />
       )}
     </div>
