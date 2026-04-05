@@ -49,14 +49,15 @@ function App() {
         shadow: "0 8px 20px rgba(15, 23, 42, 0.06), 0 26px 80px rgba(15, 23, 42, 0.12), 0 42px 130px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.78)",
       };
 
-  // Load saved shortcut on mount
+  // Load saved settings and buffer on mount
   useEffect(() => {
     (async () => {
       try {
         const { invoke } = await import("@tauri-apps/api/core");
-        const [savedShortcut, savedVisibilitySettings] = await Promise.all([
+        const [savedShortcut, savedVisibilitySettings, savedBuffer] = await Promise.all([
           invoke<string>("get_shortcut"),
           invoke<VisibilitySettings>("get_visibility_settings"),
+          invoke<string | null>("load_buffer"),
         ]);
 
         if (savedShortcut) {
@@ -64,6 +65,10 @@ function App() {
         }
 
         setVisibilitySettings(savedVisibilitySettings);
+
+        if (savedBuffer) {
+          window.dispatchEvent(new CustomEvent("load-buffer", { detail: savedBuffer }));
+        }
       } catch {
         // Not in Tauri environment or command not available
       }
@@ -114,26 +119,49 @@ function App() {
 
     // Auto-hide window immediately after copy
     try {
+      await saveOnHide();
       const { invoke } = await import("@tauri-apps/api/core");
       await invoke("hide_window");
       window.dispatchEvent(new Event("clear-editor"));
     } catch {
       // Not in Tauri environment
     }
-  }, []);
+  }, [saveOnHide]);
 
   const handleCopyClick = useCallback(() => {
     window.dispatchEvent(new Event("copy-all"));
   }, []);
 
+  const saveOnHide = useCallback(async () => {
+    try {
+      const { invoke } = await import("@tauri-apps/api/core");
+      // Get content from editor via synchronous event
+      let content = "";
+      const handler = (e: Event) => {
+        content = (e as CustomEvent).detail as string;
+      };
+      window.addEventListener("editor-content", handler, { once: true });
+      window.dispatchEvent(new Event("get-content"));
+      window.removeEventListener("editor-content", handler);
+
+      await Promise.all([
+        invoke("save_buffer", { content }),
+        invoke("save_history_entry", { content }),
+      ]);
+    } catch {
+      // Not in Tauri environment
+    }
+  }, []);
+
   const handleClose = useCallback(async () => {
+    await saveOnHide();
     try {
       const { invoke } = await import("@tauri-apps/api/core");
       await invoke("hide_window");
     } catch {
       // Not in Tauri environment
     }
-  }, []);
+  }, [saveOnHide]);
 
   const handleModeChange = useCallback((newMode: string) => {
     setMode(newMode);
@@ -173,6 +201,20 @@ function App() {
     window.addEventListener("keydown", handleKeyDown, true);
     return () => window.removeEventListener("keydown", handleKeyDown, true);
   }, [handleClose, showSettings]);
+
+  // Save buffer and history when window loses focus (before auto-hide)
+  useEffect(() => {
+    let cleanup: (() => void) | undefined;
+    import("@tauri-apps/api/event").then(({ listen }) => {
+      listen("tauri://blur", () => {
+        void saveOnHide();
+      }).then((unlisten) => {
+        cleanup = unlisten;
+      });
+    }).catch(() => {});
+
+    return () => cleanup?.();
+  }, [saveOnHide]);
 
   // Listen for window show event to focus editor
   useEffect(() => {

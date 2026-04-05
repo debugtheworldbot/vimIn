@@ -348,6 +348,32 @@ export default function VimEditor({ onCopy, onModeChange, theme }: VimEditorProp
     return () => window.removeEventListener("clear-editor", handleClear);
   }, []);
 
+  // Listen for load-buffer event (restore persisted content on mount)
+  useEffect(() => {
+    const handleLoadBuffer = (e: Event) => {
+      const content = (e as CustomEvent).detail as string;
+      if (viewRef.current && content) {
+        viewRef.current.dispatch({
+          changes: { from: 0, to: viewRef.current.state.doc.length, insert: content },
+        });
+      }
+    };
+    window.addEventListener("load-buffer", handleLoadBuffer);
+    return () => window.removeEventListener("load-buffer", handleLoadBuffer);
+  }, []);
+
+  // Listen for get-content event (used by save-on-hide)
+  useEffect(() => {
+    const handleGetContent = () => {
+      if (viewRef.current) {
+        const content = viewRef.current.state.doc.toString();
+        window.dispatchEvent(new CustomEvent("editor-content", { detail: content }));
+      }
+    };
+    window.addEventListener("get-content", handleGetContent);
+    return () => window.removeEventListener("get-content", handleGetContent);
+  }, []);
+
   return (
     <div
       ref={editorRef}
