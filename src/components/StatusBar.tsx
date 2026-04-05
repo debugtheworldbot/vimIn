@@ -2,7 +2,6 @@ import ShortcutDisplay from "./ShortcutDisplay";
 
 interface StatusBarProps {
   mode: string;
-  copied: boolean;
   onCopyClick: () => void;
   theme: "dark" | "light";
   language: string;
@@ -16,7 +15,7 @@ const modeColors: Record<string, string> = {
   "V-BLOCK": "#f87171",
 };
 
-export default function StatusBar({ mode, copied, onCopyClick, theme, language }: StatusBarProps) {
+export default function StatusBar({ mode, onCopyClick, theme, language }: StatusBarProps) {
   const modeColor = modeColors[mode] || "#a78bfa";
   const isDark = theme === "dark";
   const colors = isDark
@@ -125,10 +124,8 @@ export default function StatusBar({ mode, copied, onCopyClick, theme, language }
             padding: "3px 10px",
             borderRadius: "5px",
             border: colors.kbdBorder,
-            backgroundColor: copied
-              ? "rgba(52, 211, 153, 0.15)"
-              : colors.buttonBg,
-            color: copied ? "#34d399" : colors.buttonText,
+            backgroundColor: colors.buttonBg,
+            color: colors.buttonText,
             fontSize: "11px",
             fontFamily: "'SF Mono', Menlo, Monaco, monospace",
             cursor: "pointer",
@@ -136,45 +133,30 @@ export default function StatusBar({ mode, copied, onCopyClick, theme, language }
             outline: "none",
           }}
           onMouseEnter={(e) => {
-            if (!copied) {
-              e.currentTarget.style.backgroundColor = colors.buttonBgHover;
-              e.currentTarget.style.color = colors.buttonTextHover;
-            }
+            e.currentTarget.style.backgroundColor = colors.buttonBgHover;
+            e.currentTarget.style.color = colors.buttonTextHover;
           }}
           onMouseLeave={(e) => {
-            if (!copied) {
-              e.currentTarget.style.backgroundColor = colors.buttonBg;
-              e.currentTarget.style.color = colors.buttonText;
-            }
+            e.currentTarget.style.backgroundColor = colors.buttonBg;
+            e.currentTarget.style.color = colors.buttonText;
           }}
         >
-          {copied ? (
-            <>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-              Copied
-            </>
-          ) : (
-            <>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-              </svg>
-              Copy All
-              <kbd style={{
-                fontSize: "10px",
-                padding: "1px 4px",
-                borderRadius: "3px",
-                backgroundColor: colors.kbdBg,
-                border: colors.kbdBorder,
-                color: colors.kbdText,
-                marginLeft: "2px",
-              }}>
-                ⌘⏎
-              </kbd>
-            </>
-          )}
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+          </svg>
+          Copy All
+          <kbd style={{
+            fontSize: "10px",
+            padding: "1px 4px",
+            borderRadius: "3px",
+            backgroundColor: colors.kbdBg,
+            border: colors.kbdBorder,
+            color: colors.kbdText,
+            marginLeft: "2px",
+          }}>
+            ⌘⏎
+          </kbd>
         </button>
       </div>
     </div>

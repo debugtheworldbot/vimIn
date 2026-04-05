@@ -6,8 +6,9 @@ use serde::{Deserialize, Serialize};
 use tauri::{
     menu::{Menu, MenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
+    webview::WebviewWindowBuilder,
     ActivationPolicy, AppHandle, Emitter, Manager, PhysicalPosition, PhysicalSize, Position,
-    Size,
+    Size, WebviewUrl,
 };
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
 use tauri_plugin_liquid_glass::{GlassMaterialVariant, LiquidGlassConfig, LiquidGlassExt};
@@ -443,6 +444,70 @@ fn get_history(app: AppHandle) -> Vec<HistoryEntry> {
     }
 }
 
+#[tauri::command]
+fn show_copy_toast(app: AppHandle) {
+    // Close existing toast if any
+    if let Some(existing) = app.get_webview_window("toast") {
+        let _ = existing.close();
+    }
+
+    let monitor = app.primary_monitor().ok().flatten();
+    let scale_factor = monitor.as_ref().map(|m| m.scale_factor()).unwrap_or(2.0);
+    let (screen_w, screen_h) = monitor
+        .as_ref()
+        .map(|m| {
+            // Convert physical pixels to logical pixels
+            let size = m.size();
+            (
+                size.width as f64 / scale_factor,
+                size.height as f64 / scale_factor,
+            )
+        })
+        .unwrap_or((1920.0, 1080.0));
+
+    let toast_w = 140.0;
+    let toast_h = 40.0;
+    let x = (screen_w - toast_w) / 2.0;
+    let y = screen_h - toast_h - 60.0;
+
+    match WebviewWindowBuilder::new(
+        &app,
+        "toast",
+        WebviewUrl::App("toast.html".into()),
+    )
+    .title("")
+    .inner_size(toast_w, toast_h)
+    .position(x, y)
+    .decorations(false)
+    .transparent(true)
+    .always_on_top(true)
+    .resizable(false)
+    .shadow(false)
+    .build()
+    {
+        Ok(window) => {
+            let _ = window.set_shadow(true);
+            let _ = app.liquid_glass().set_effect(
+                &window,
+                LiquidGlassConfig {
+                    enabled: true,
+                    corner_radius: 20.0,
+                    tint_color: Some("#FFFFFF08".into()),
+                    variant: GlassMaterialVariant::Clear,
+                },
+            );
+            let _ = window.set_ignore_cursor_events(true);
+            thread::spawn(move || {
+                thread::sleep(Duration::from_millis(900));
+                let _ = window.close();
+            });
+        }
+        Err(e) => {
+            log::error!("Failed to create toast window: {}", e);
+        }
+    }
+}
+
 // ── App state ─────────────────────────────────────────────────────────
 
 struct ShortcutState_ {
@@ -579,6 +644,7 @@ pub fn run() {
             load_buffer,
             save_history_entry,
             get_history,
+            show_copy_toast,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

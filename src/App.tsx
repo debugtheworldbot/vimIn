@@ -30,7 +30,6 @@ function formatShortcutDisplay(shortcut: string): string {
 
 function App() {
   const [mode, setMode] = useState("NORMAL");
-  const [copied, setCopied] = useState(false);
   const [language, setLanguage] = useState("markdown");
   const [showSettings, setShowSettings] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
@@ -150,13 +149,11 @@ function App() {
       }
     }
 
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    await saveOnHide();
 
-    // Auto-hide window immediately after copy
     try {
-      await saveOnHide();
       const { invoke } = await import("@tauri-apps/api/core");
+      await invoke("show_copy_toast");
       await invoke("hide_window");
       window.dispatchEvent(new Event("clear-editor"));
     } catch {
@@ -277,7 +274,7 @@ function App() {
         })}
       />
       <VimEditor onCopy={handleCopy} onModeChange={handleModeChange} onLanguageChange={setLanguage} theme={theme} />
-      <StatusBar mode={mode} copied={copied} onCopyClick={handleCopyClick} theme={theme} language={language} />
+      <StatusBar mode={mode} onCopyClick={handleCopyClick} theme={theme} language={language} />
 
       {showSettings && (
         <ShortcutRecorder
