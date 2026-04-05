@@ -4,6 +4,7 @@ import ShortcutDisplay from "./ShortcutDisplay";
 interface TitleBarProps {
   onClose: () => void;
   onSettingsClick: () => void;
+  onHelpClick: () => void;
   shortcutDisplay: string;
   theme: "dark" | "light";
   onThemeToggle: () => void;
@@ -12,6 +13,7 @@ interface TitleBarProps {
 export default function TitleBar({
   onClose,
   onSettingsClick,
+  onHelpClick,
   shortcutDisplay,
   theme,
   onThemeToggle,
@@ -147,6 +149,42 @@ export default function TitleBar({
             fontSize="10px"
           />
         </span>
+        <button
+          data-tauri-no-drag
+          onMouseDown={(e) => {
+            e.stopPropagation();
+          }}
+          onClick={onHelpClick}
+          style={{
+            width: "22px",
+            height: "22px",
+            borderRadius: "6px",
+            border: "none",
+            backgroundColor: "transparent",
+            cursor: "pointer",
+            padding: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: colors.icon,
+            transition: "all 0.15s ease",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = colors.iconHover;
+            e.currentTarget.style.backgroundColor = colors.iconHoverBg;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = colors.icon;
+            e.currentTarget.style.backgroundColor = "transparent";
+          }}
+          title="Keyboard shortcuts (?)"
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+            <path d="M12 17h.01" />
+          </svg>
+        </button>
         <button
           data-tauri-no-drag
           onMouseDown={(e) => {

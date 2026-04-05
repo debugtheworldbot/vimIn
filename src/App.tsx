@@ -4,6 +4,7 @@ import StatusBar from "./components/StatusBar";
 import TitleBar from "./components/TitleBar";
 import ShortcutRecorder from "./components/ShortcutRecorder";
 import HistoryList from "./components/HistoryList";
+import HelpModal from "./components/HelpModal";
 
 const DEFAULT_SHORTCUT = "Alt+Space";
 type ThemeMode = "dark" | "light";
@@ -33,6 +34,7 @@ function App() {
   const [language, setLanguage] = useState("markdown");
   const [showSettings, setShowSettings] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   const [currentShortcut, setCurrentShortcut] = useState(DEFAULT_SHORTCUT);
   const [theme, setTheme] = useState<ThemeMode>(getInitialTheme);
   const [visibilitySettings, setVisibilitySettings] = useState<VisibilitySettings>({
@@ -182,6 +184,19 @@ function App() {
   // Global keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // ? key: toggle help (only when no other modal is open)
+      if (e.key === "?" && !showSettings && !showHistory) {
+        e.preventDefault();
+        e.stopPropagation();
+        setShowHelp(prev => !prev);
+        return;
+      }
+      // Escape closes help if open
+      if (e.key === "Escape" && showHelp) {
+        e.preventDefault();
+        setShowHelp(false);
+        return;
+      }
       // Cmd + Enter: copy all content
       if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
         e.preventDefault();
@@ -212,7 +227,7 @@ function App() {
 
     window.addEventListener("keydown", handleKeyDown, true);
     return () => window.removeEventListener("keydown", handleKeyDown, true);
-  }, [handleClose, showSettings]);
+  }, [handleClose, showSettings, showHistory, showHelp]);
 
   // Save buffer and history when window loses focus (before auto-hide)
   useEffect(() => {
@@ -265,6 +280,7 @@ function App() {
       <TitleBar
         onClose={handleClose}
         onSettingsClick={() => setShowSettings(true)}
+        onHelpClick={() => setShowHelp(prev => !prev)}
         shortcutDisplay={formatShortcutDisplay(currentShortcut)}
         theme={theme}
         onThemeToggle={() => setTheme((current) => {
@@ -284,6 +300,15 @@ function App() {
           onVisibilitySettingsChange={handleVisibilitySettingsChange}
           onClose={() => setShowSettings(false)}
           theme={theme}
+        />
+      )}
+      {showHelp && (
+        <HelpModal
+          theme={theme}
+          onClose={() => {
+            setShowHelp(false);
+            window.dispatchEvent(new Event("focus-editor"));
+          }}
         />
       )}
       {showHistory && (
