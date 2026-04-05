@@ -236,6 +236,10 @@ export default function VimEditor({ onCopy, onModeChange, theme }: VimEditorProp
       }
     });
 
+    Vim.defineEx("history", "hist", function () {
+      window.dispatchEvent(new Event("show-history"));
+    });
+
     // Mode change listener via update listener
     const modeChangeListener = EditorView.updateListener.of((update) => {
       if (update.transactions.length > 0) {

@@ -3,6 +3,7 @@ import VimEditor from "./components/VimEditor";
 import StatusBar from "./components/StatusBar";
 import TitleBar from "./components/TitleBar";
 import ShortcutRecorder from "./components/ShortcutRecorder";
+import HistoryList from "./components/HistoryList";
 
 const DEFAULT_SHORTCUT = "Alt+Space";
 type ThemeMode = "dark" | "light";
@@ -31,6 +32,7 @@ function App() {
   const [mode, setMode] = useState("NORMAL");
   const [copied, setCopied] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const [currentShortcut, setCurrentShortcut] = useState(DEFAULT_SHORTCUT);
   const [theme, setTheme] = useState<ThemeMode>(getInitialTheme);
   const [visibilitySettings, setVisibilitySettings] = useState<VisibilitySettings>({
@@ -73,6 +75,18 @@ function App() {
         // Not in Tauri environment or command not available
       }
     })();
+  }, []);
+
+  useEffect(() => {
+    const handleShowHistory = () => setShowHistory(true);
+    window.addEventListener("show-history", handleShowHistory);
+    return () => window.removeEventListener("show-history", handleShowHistory);
+  }, []);
+
+  const handleHistorySelect = useCallback((content: string) => {
+    window.dispatchEvent(new CustomEvent("load-buffer", { detail: content }));
+    setShowHistory(false);
+    window.dispatchEvent(new Event("focus-editor"));
   }, []);
 
   const handleShortcutChange = useCallback(async (newShortcut: string) => {
@@ -272,6 +286,16 @@ function App() {
           onVisibilitySettingsChange={handleVisibilitySettingsChange}
           onClose={() => setShowSettings(false)}
           theme={theme}
+        />
+      )}
+      {showHistory && (
+        <HistoryList
+          theme={theme}
+          onSelect={handleHistorySelect}
+          onClose={() => {
+            setShowHistory(false);
+            window.dispatchEvent(new Event("focus-editor"));
+          }}
         />
       )}
     </div>
