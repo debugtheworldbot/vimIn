@@ -5,6 +5,7 @@ interface StatusBarProps {
   copied: boolean;
   onCopyClick: () => void;
   theme: "dark" | "light";
+  language: string;
 }
 
 const modeColors: Record<string, string> = {
@@ -15,7 +16,7 @@ const modeColors: Record<string, string> = {
   "V-BLOCK": "#f87171",
 };
 
-export default function StatusBar({ mode, copied, onCopyClick, theme }: StatusBarProps) {
+export default function StatusBar({ mode, copied, onCopyClick, theme, language }: StatusBarProps) {
   const modeColor = modeColors[mode] || "#a78bfa";
   const isDark = theme === "dark";
   const colors = isDark
@@ -90,7 +91,7 @@ export default function StatusBar({ mode, copied, onCopyClick, theme }: StatusBa
             transition: "color 0.35s ease",
           }}
         >
-          VimInput
+          {language}
         </span>
       </div>
 

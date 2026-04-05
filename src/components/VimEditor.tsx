@@ -6,10 +6,14 @@ import { vim, Vim, getCM } from "@replit/codemirror-vim";
 import type { CodeMirrorV } from "@replit/codemirror-vim";
 import { syntaxHighlighting, defaultHighlightStyle, bracketMatching } from "@codemirror/language";
 import { markdown } from "@codemirror/lang-markdown";
+import { javascript } from "@codemirror/lang-javascript";
+import { python } from "@codemirror/lang-python";
+import { json } from "@codemirror/lang-json";
 
 interface VimEditorProps {
   onCopy: (text: string) => void;
   onModeChange: (mode: string) => void;
+  onLanguageChange: (lang: string) => void;
   theme: "dark" | "light";
 }
 
@@ -191,11 +195,34 @@ const lightTheme = EditorView.theme({
 }, { dark: false });
 
 const themeCompartment = new Compartment();
+const languageCompartment = new Compartment();
 
-export default function VimEditor({ onCopy, onModeChange, theme }: VimEditorProps) {
+type Language = "markdown" | "javascript" | "python" | "json";
+
+function detectLanguage(content: string): Language {
+  const firstLine = content.split("\n").find((line) => line.trim() !== "") || "";
+  const trimmed = firstLine.trim();
+
+  if (trimmed.startsWith("{") || trimmed.startsWith("[")) return "json";
+  if (/\b(import |export |const |let |var |function )/.test(trimmed)) return "javascript";
+  if (/\b(def |class \w+.*:)/.test(trimmed) || (trimmed.startsWith("import ") && !trimmed.includes("{"))) return "python";
+  return "markdown";
+}
+
+function getLanguageExtension(lang: Language) {
+  switch (lang) {
+    case "javascript": return javascript({ typescript: true });
+    case "python": return python();
+    case "json": return json();
+    case "markdown": return markdown();
+  }
+}
+
+export default function VimEditor({ onCopy, onModeChange, onLanguageChange, theme }: VimEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const initialThemeRef = useRef(theme);
+  const manualLangRef = useRef<Language | null>(null);
 
   const handleCopy = useCallback((text: string) => {
     onCopy(text);
@@ -240,6 +267,28 @@ export default function VimEditor({ onCopy, onModeChange, theme }: VimEditorProp
       window.dispatchEvent(new Event("show-history"));
     });
 
+    Vim.defineEx("set", "set", function (_cm: unknown, params: { args?: string[] }) {
+      const arg = params.args?.[0] || "";
+      const match = arg.match(/^ft=(.+)$/);
+      if (!match || !viewRef.current) return;
+
+      const langMap: Record<string, Language> = {
+        javascript: "javascript", js: "javascript", typescript: "javascript", ts: "javascript",
+        python: "python", py: "python",
+        json: "json",
+        markdown: "markdown", md: "markdown",
+      };
+
+      const lang = langMap[match[1]];
+      if (lang) {
+        manualLangRef.current = lang;
+        viewRef.current.dispatch({
+          effects: languageCompartment.reconfigure(getLanguageExtension(lang)),
+        });
+        onLanguageChange(lang);
+      }
+    });
+
     // Mode change listener via update listener
     const modeChangeListener = EditorView.updateListener.of((update) => {
       if (update.transactions.length > 0) {
@@ -273,7 +322,7 @@ export default function VimEditor({ onCopy, onModeChange, theme }: VimEditorProp
         highlightActiveLine(),
         bracketMatching(),
         syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
-        markdown(),
+        languageCompartment.of(markdown()),
         keymap.of([
           ...defaultKeymap,
           ...historyKeymap,
@@ -290,6 +339,7 @@ export default function VimEditor({ onCopy, onModeChange, theme }: VimEditorProp
     });
 
     viewRef.current = view;
+    onLanguageChange("markdown");
 
     // Focus editor on mount
     setTimeout(() => {
@@ -345,12 +395,17 @@ export default function VimEditor({ onCopy, onModeChange, theme }: VimEditorProp
         if (hasVimState(cm)) {
           Vim.exitInsertMode(cm);
         }
+        manualLangRef.current = null;
+        viewRef.current.dispatch({
+          effects: languageCompartment.reconfigure(markdown()),
+        });
+        onLanguageChange("markdown");
         viewRef.current.focus();
       }
     };
     window.addEventListener("clear-editor", handleClear);
     return () => window.removeEventListener("clear-editor", handleClear);
-  }, []);
+  }, [onLanguageChange]);
 
   // Listen for load-buffer event (restore persisted content on mount)
   useEffect(() => {
@@ -360,11 +415,18 @@ export default function VimEditor({ onCopy, onModeChange, theme }: VimEditorProp
         viewRef.current.dispatch({
           changes: { from: 0, to: viewRef.current.state.doc.length, insert: content },
         });
+        if (!manualLangRef.current) {
+          const lang = detectLanguage(content);
+          viewRef.current.dispatch({
+            effects: languageCompartment.reconfigure(getLanguageExtension(lang)),
+          });
+          onLanguageChange(lang);
+        }
       }
     };
     window.addEventListener("load-buffer", handleLoadBuffer);
     return () => window.removeEventListener("load-buffer", handleLoadBuffer);
-  }, []);
+  }, [onLanguageChange]);
 
   // Listen for get-content event (used by save-on-hide)
   useEffect(() => {

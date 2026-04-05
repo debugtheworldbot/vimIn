@@ -31,6 +31,7 @@ function formatShortcutDisplay(shortcut: string): string {
 function App() {
   const [mode, setMode] = useState("NORMAL");
   const [copied, setCopied] = useState(false);
+  const [language, setLanguage] = useState("markdown");
   const [showSettings, setShowSettings] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [currentShortcut, setCurrentShortcut] = useState(DEFAULT_SHORTCUT);
@@ -275,8 +276,8 @@ function App() {
           return next;
         })}
       />
-      <VimEditor onCopy={handleCopy} onModeChange={handleModeChange} theme={theme} />
-      <StatusBar mode={mode} copied={copied} onCopyClick={handleCopyClick} theme={theme} />
+      <VimEditor onCopy={handleCopy} onModeChange={handleModeChange} onLanguageChange={setLanguage} theme={theme} />
+      <StatusBar mode={mode} copied={copied} onCopyClick={handleCopyClick} theme={theme} language={language} />
 
       {showSettings && (
         <ShortcutRecorder
