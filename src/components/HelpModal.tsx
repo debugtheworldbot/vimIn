@@ -2,15 +2,18 @@ import { useEffect } from "react";
 
 interface HelpModalProps {
   theme: "dark" | "light";
+  shortcutDisplay: string;
   onClose: () => void;
 }
 
-const APP_SHORTCUTS = [
-  { keys: "⌥ Space", desc: "Toggle window" },
-  { keys: "⌘ Enter", desc: "Copy all" },
-  { keys: "⌘ ⇧ C", desc: "Clear editor" },
-  { keys: "⌘ W", desc: "Hide window" },
-];
+function getAppShortcuts(shortcutDisplay: string) {
+  return [
+    { keys: shortcutDisplay, desc: "Toggle window" },
+    { keys: "⌘ Enter", desc: "Copy all" },
+    { keys: "⌘ ⇧ C", desc: "Clear editor" },
+    { keys: "⌘ W", desc: "Hide window" },
+  ];
+}
 
 const VIM_COMMANDS = [
   { keys: ":w", desc: "Copy content" },
@@ -20,7 +23,8 @@ const VIM_COMMANDS = [
   { keys: ":set ft=X", desc: "Set language" },
 ];
 
-export default function HelpModal({ theme, onClose }: HelpModalProps) {
+export default function HelpModal({ theme, shortcutDisplay, onClose }: HelpModalProps) {
+  const appShortcuts = getAppShortcuts(shortcutDisplay);
   const isDark = theme === "dark";
   const colors = isDark
     ? {
@@ -151,7 +155,7 @@ export default function HelpModal({ theme, onClose }: HelpModalProps) {
           display: "flex",
           gap: "20px",
         }}>
-          {renderSection("App", APP_SHORTCUTS)}
+          {renderSection("App", appShortcuts)}
           {renderSection("Vim", VIM_COMMANDS)}
         </div>
         <div style={{

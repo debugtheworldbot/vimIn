@@ -305,6 +305,7 @@ function App() {
       {showHelp && (
         <HelpModal
           theme={theme}
+          shortcutDisplay={formatShortcutDisplay(currentShortcut)}
           onClose={() => {
             setShowHelp(false);
             window.dispatchEvent(new Event("focus-editor"));
