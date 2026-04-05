@@ -35,6 +35,13 @@ Release: `./release.sh <version>` — bumps version across package.json/Cargo.to
 
 **IPC**: Frontend dynamically imports `@tauri-apps/api` to gracefully handle non-Tauri environments (browser dev).
 
+## Design Docs
+
+Feature specs and implementation plans are in `docs/superpowers/`. When modifying a feature that has a corresponding doc, read the doc first and treat it as the source of truth for requirements.
+
+- `docs/superpowers/specs/` — feature design specs (what to build and why)
+- `docs/superpowers/plans/` — implementation plans (how to build, step by step)
+
 ## Key Details
 
 - macOS-only: uses `macOSPrivateApi: true` in Tauri config for advanced window behavior
