@@ -37,6 +37,16 @@ body {
 
 .editor-container .cm-editor {
   height: 100%;
+  transition: color 0.35s ease, background-color 0.35s ease;
+}
+
+.editor-container .cm-editor .cm-gutters {
+  transition: color 0.35s ease;
+}
+
+.editor-container .cm-editor .cm-activeLine,
+.editor-container .cm-editor .cm-activeLineGutter {
+  transition: background-color 0.35s ease, color 0.35s ease;
 }
 
 .editor-container .cm-editor.cm-focused {

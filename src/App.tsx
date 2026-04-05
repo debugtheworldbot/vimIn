@@ -205,6 +205,7 @@ function App() {
         overflow: "hidden",
         border: themeStyles.border,
         boxShadow: themeStyles.shadow,
+        transition: "background-color 0.35s ease, border 0.35s ease, box-shadow 0.35s ease",
       }}
     >
       <TitleBar

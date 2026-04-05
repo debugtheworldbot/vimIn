@@ -59,6 +59,7 @@ export default function StatusBar({ mode, copied, onCopyClick, theme }: StatusBa
         userSelect: "none",
         WebkitUserSelect: "none",
         flexShrink: 0,
+        transition: "background-color 0.35s ease, border-top 0.35s ease",
       }}
     >
       {/* Left: Mode indicator */}
@@ -86,6 +87,7 @@ export default function StatusBar({ mode, copied, onCopyClick, theme }: StatusBa
             color: colors.appText,
             fontSize: "11px",
             fontFamily: "'SF Mono', Menlo, Monaco, monospace",
+            transition: "color 0.35s ease",
           }}
         >
           VimInput
@@ -99,6 +101,7 @@ export default function StatusBar({ mode, copied, onCopyClick, theme }: StatusBa
             color: colors.hintText,
             fontSize: "11px",
             fontFamily: "'SF Mono', Menlo, Monaco, monospace",
+            transition: "color 0.35s ease",
             display: "inline-flex",
             alignItems: "center",
             gap: "4px",

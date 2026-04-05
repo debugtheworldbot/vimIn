@@ -204,7 +204,7 @@ export default function ShortcutRecorder({
       <div
         ref={recorderRef}
         style={{
-          width: "400px",
+          width: "320px",
           backgroundColor: colors.modal,
           borderRadius: "12px",
           border: colors.border,
@@ -212,186 +212,105 @@ export default function ShortcutRecorder({
           overflow: "hidden",
         }}
       >
-        {/* Header */}
-        <div style={{
-          padding: "16px 20px 12px",
-          borderBottom: colors.subtleBorder,
-        }}>
-          <h3 style={{
-            margin: 0,
-            fontSize: "14px",
-            fontWeight: 600,
-            color: colors.title,
-            fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif",
-          }}>
-            Set Global Shortcut
-          </h3>
-          <p style={{
-            margin: "6px 0 0",
-            fontSize: "12px",
-            color: colors.body,
-            fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif",
-          }}>
-            Configure how VimInput is shown and how it stays accessible
-          </p>
-        </div>
-
-        <div style={{ padding: "20px" }}>
+        <div style={{ padding: "16px" }}>
+          {/* Shortcut */}
           <div style={{
-            marginBottom: "18px",
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+            marginBottom: "14px",
           }}>
-            <div style={{
-              marginBottom: "10px",
-              fontSize: "11px",
-              fontWeight: 600,
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
+            <span style={{
+              fontSize: "12px",
+              fontWeight: 500,
               color: colors.body,
               fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif",
+              flexShrink: 0,
             }}>
-              Global Shortcut
+              Shortcut
+            </span>
+            <div
+              onClick={() => setRecording(true)}
+              style={{
+                flex: 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                height: "36px",
+                borderRadius: "6px",
+                border: recording
+                  ? "2px solid #a78bfa"
+                  : colors.displayBorder,
+                backgroundColor: recording
+                  ? "rgba(167, 139, 250, 0.08)"
+                  : colors.displayBg,
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+              }}
+            >
+              {recording ? (
+                <span style={{
+                  fontSize: "12px",
+                  color: "#a78bfa",
+                  fontFamily: "'SF Mono', Menlo, Monaco, monospace",
+                  animation: "pulse 1.5s ease-in-out infinite",
+                }}>
+                  Press shortcut...
+                </span>
+              ) : (
+                <ShortcutDisplay
+                  shortcut={formatShortcutDisplay(displayShortcut)}
+                  color={colors.text}
+                  fontSize="14px"
+                  fontWeight={500}
+                  letterSpacing="1px"
+                />
+              )}
             </div>
-          <div
-            onClick={() => setRecording(true)}
+          </div>
+
+          {/* Hide menu bar icon */}
+          <label
             style={{
               display: "flex",
               alignItems: "center",
-              justifyContent: "center",
-              height: "56px",
-              borderRadius: "8px",
-              border: recording
-                ? "2px solid #a78bfa"
-                : colors.displayBorder,
-              backgroundColor: recording
-                ? "rgba(167, 139, 250, 0.08)"
-                : colors.displayBg,
+              gap: "8px",
               cursor: "pointer",
-              transition: "all 0.2s ease",
+              marginBottom: "14px",
             }}
           >
-            {recording ? (
-              <span style={{
-                fontSize: "13px",
-                color: "#a78bfa",
-                fontFamily: "'SF Mono', Menlo, Monaco, monospace",
-                animation: "pulse 1.5s ease-in-out infinite",
-              }}>
-                Press your shortcut...
-              </span>
-            ) : (
-              <ShortcutDisplay
-                shortcut={formatShortcutDisplay(displayShortcut)}
-                color={colors.text}
-                fontSize="18px"
-                fontWeight={500}
-                letterSpacing="2px"
-              />
-            )}
-          </div>
-          </div>
-
-          <p style={{
-            margin: "10px 0 0",
-            fontSize: "11px",
-            color: colors.muted,
-            textAlign: "center",
-            fontFamily: "'SF Mono', Menlo, Monaco, monospace",
-          }}>
-            {recording
-              ? "Press a modifier (⌘ ⌥ ⌃ ⇧) + key"
-              : "Click to record a new shortcut"
-            }
-          </p>
-
-          <div style={{
-            marginTop: "20px",
-            paddingTop: "18px",
-            borderTop: colors.subtleBorder,
-            display: "flex",
-            flexDirection: "column",
-            gap: "12px",
-          }}>
-            <div style={{
-              fontSize: "11px",
-              fontWeight: 600,
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              color: colors.body,
-              fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif",
-            }}>
-              Visibility
-            </div>
-
-            <label
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "12px",
-                width: "100%",
-                padding: "12px",
-                borderRadius: "10px",
-                border: colors.displayBorder,
-                backgroundColor: colors.displayBg,
-                cursor: "pointer",
-                textAlign: "left",
+            <input
+              type="checkbox"
+              checked={visibilitySettings.hide_menu_bar_icon}
+              onMouseDown={(e) => {
+                e.stopPropagation();
               }}
-            >
-              <input
-                type="checkbox"
-                checked={visibilitySettings.hide_menu_bar_icon}
-                onMouseDown={(e) => {
-                  e.stopPropagation();
-                }}
-                onChange={(e) => {
-                  handleMenuBarIconChange(e.currentTarget.checked);
-                }}
-                style={{
-                  width: "16px",
-                  height: "16px",
-                  accentColor: "#2563eb",
-                  flexShrink: 0,
-                }}
-              />
-              <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                <span style={{
-                  fontSize: "13px",
-                  color: colors.text,
-                  fontWeight: 500,
-                  fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif",
-                }}>
-                  Hide menu bar icon
-                </span>
-                <span style={{
-                  fontSize: "11px",
-                  color: colors.body,
-                  lineHeight: 1.45,
-                  fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif",
-                }}>
-                  Remove the status bar icon from the macOS menu bar.
-                </span>
-              </div>
-            </label>
-
-            <p style={{
-              margin: 0,
-              fontSize: "11px",
-              color: colors.body,
-              lineHeight: 1.5,
+              onChange={(e) => {
+                handleMenuBarIconChange(e.currentTarget.checked);
+              }}
+              style={{
+                width: "14px",
+                height: "14px",
+                accentColor: "#2563eb",
+                flexShrink: 0,
+              }}
+            />
+            <span style={{
+              fontSize: "12px",
+              color: colors.text,
+              fontWeight: 500,
               fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif",
             }}>
-              Dock icon stays hidden. You can still show VimInput with the global shortcut.
-            </p>
-          </div>
-        </div>
+              Hide menu bar icon
+            </span>
+          </label>
 
-        {/* Footer buttons */}
-        <div style={{
-          display: "flex",
-          gap: "8px",
-          padding: "12px 20px 16px",
-          justifyContent: "flex-end",
-          borderTop: colors.subtleBorder,
-        }}>
+          {/* Buttons */}
+          <div style={{
+            display: "flex",
+            gap: "8px",
+            justifyContent: "flex-end",
+          }}>
           <button
             onClick={handleCancel}
             style={{
@@ -437,6 +356,7 @@ export default function ShortcutRecorder({
           >
             {pendingShortcut ? "Save" : "Done"}
           </button>
+          </div>
         </div>
       </div>
 

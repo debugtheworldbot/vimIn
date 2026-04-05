@@ -72,6 +72,7 @@ export default function TitleBar({
         WebkitUserSelect: "none",
         cursor: "grab",
         flexShrink: 0,
+        transition: "background-color 0.35s ease",
       }}
     >
       <div
@@ -143,6 +144,7 @@ export default function TitleBar({
           fontWeight: 500,
           fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif",
           letterSpacing: "0.3px",
+          transition: "color 0.35s ease",
         }}
       >
         VimInput
