@@ -27,7 +27,6 @@ export default function TitleBar({
         icon: "rgba(255, 255, 255, 0.42)",
         iconHover: "rgba(255, 255, 255, 0.82)",
         iconHoverBg: "rgba(255, 255, 255, 0.06)",
-        trafficIdle: "rgba(255, 255, 255, 0.1)",
       }
     : {
         background: "rgba(255, 255, 255, 0.1)",
@@ -37,7 +36,6 @@ export default function TitleBar({
         icon: "rgba(17, 24, 39, 0.46)",
         iconHover: "rgba(17, 24, 39, 0.9)",
         iconHoverBg: "rgba(255, 255, 255, 0.28)",
-        trafficIdle: "rgba(17, 24, 39, 0.12)",
       };
 
   const handleDragStart = async (event: ReactMouseEvent<HTMLElement>) => {
@@ -118,22 +116,6 @@ export default function TitleBar({
             <path d="M0.5 0.5L5.5 5.5M5.5 0.5L0.5 5.5" stroke="rgba(80, 16, 12, 0.72)" strokeWidth="1.2" strokeLinecap="round" />
           </svg>
         </button>
-        <div
-          style={{
-            width: "12px",
-            height: "12px",
-            borderRadius: "50%",
-            backgroundColor: colors.trafficIdle,
-          }}
-        />
-        <div
-          style={{
-            width: "12px",
-            height: "12px",
-            borderRadius: "50%",
-            backgroundColor: colors.trafficIdle,
-          }}
-        />
       </div>
 
       <span

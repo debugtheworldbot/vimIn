@@ -196,6 +196,7 @@ export default function ShortcutRecorder({
         backgroundColor: colors.overlay,
         zIndex: 1000,
         backdropFilter: "blur(4px)",
+        animation: "overlay-in 0.15s ease",
       }}
       onClick={(e) => {
         if (e.target === e.currentTarget) handleCancel();
@@ -210,6 +211,7 @@ export default function ShortcutRecorder({
           border: colors.border,
           boxShadow: "0 25px 50px rgba(0, 0, 0, 0.5)",
           overflow: "hidden",
+          animation: "modal-in 0.2s ease",
         }}
       >
         <div style={{ padding: "16px" }}>

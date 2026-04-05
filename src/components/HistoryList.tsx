@@ -99,6 +99,7 @@ export default function HistoryList({ theme, onSelect, onClose }: HistoryListPro
         backgroundColor: colors.overlay,
         zIndex: 1000,
         backdropFilter: "blur(4px)",
+        animation: "overlay-in 0.15s ease",
       }}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
@@ -115,6 +116,7 @@ export default function HistoryList({ theme, onSelect, onClose }: HistoryListPro
           overflow: "hidden",
           display: "flex",
           flexDirection: "column",
+          animation: "modal-in 0.2s ease",
         }}
       >
         <div style={{

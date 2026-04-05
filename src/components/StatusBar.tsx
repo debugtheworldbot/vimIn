@@ -1,5 +1,3 @@
-import ShortcutDisplay from "./ShortcutDisplay";
-
 interface StatusBarProps {
   mode: string;
   onCopyClick: () => void;
@@ -94,39 +92,30 @@ export default function StatusBar({ mode, onCopyClick, theme, language }: Status
         </span>
       </div>
 
-      {/* Right: Copy button + shortcut hint */}
-      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+      {/* Right: hints + copy */}
+      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
         <span
           style={{
             color: colors.hintText,
-            fontSize: "11px",
+            fontSize: "10px",
             fontFamily: "'SF Mono', Menlo, Monaco, monospace",
             transition: "color 0.35s ease",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "4px",
           }}
         >
-          <span>:w copy · :q hide ·</span>
-          <ShortcutDisplay
-            shortcut="⌘ ⇧ C"
-            color={colors.hintText}
-            fontSize="11px"
-          />
-          <span>clear</span>
+          :w copy · :q hide
         </span>
         <button
           onClick={onCopyClick}
           style={{
             display: "flex",
             alignItems: "center",
-            gap: "5px",
-            padding: "3px 10px",
-            borderRadius: "5px",
+            gap: "4px",
+            padding: "2px 8px",
+            borderRadius: "4px",
             border: colors.kbdBorder,
             backgroundColor: colors.buttonBg,
             color: colors.buttonText,
-            fontSize: "11px",
+            fontSize: "10px",
             fontFamily: "'SF Mono', Menlo, Monaco, monospace",
             cursor: "pointer",
             transition: "all 0.15s ease",
@@ -141,22 +130,7 @@ export default function StatusBar({ mode, onCopyClick, theme, language }: Status
             e.currentTarget.style.color = colors.buttonText;
           }}
         >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-          </svg>
-          Copy All
-          <kbd style={{
-            fontSize: "10px",
-            padding: "1px 4px",
-            borderRadius: "3px",
-            backgroundColor: colors.kbdBg,
-            border: colors.kbdBorder,
-            color: colors.kbdText,
-            marginLeft: "2px",
-          }}>
-            ⌘⏎
-          </kbd>
+          ⌘⏎
         </button>
       </div>
     </div>
