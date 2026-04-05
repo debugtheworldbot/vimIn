@@ -99,6 +99,27 @@ function App() {
     }
   }, []);
 
+  const saveOnHide = useCallback(async () => {
+    try {
+      const { invoke } = await import("@tauri-apps/api/core");
+      // Get content from editor via synchronous event
+      let content = "";
+      const handler = (e: Event) => {
+        content = (e as CustomEvent).detail as string;
+      };
+      window.addEventListener("editor-content", handler, { once: true });
+      window.dispatchEvent(new Event("get-content"));
+      window.removeEventListener("editor-content", handler);
+
+      await Promise.all([
+        invoke("save_buffer", { content }),
+        invoke("save_history_entry", { content }),
+      ]);
+    } catch {
+      // Not in Tauri environment
+    }
+  }, []);
+
   const handleCopy = useCallback(async (text: string) => {
     if (!text.trim()) return;
 
@@ -130,27 +151,6 @@ function App() {
 
   const handleCopyClick = useCallback(() => {
     window.dispatchEvent(new Event("copy-all"));
-  }, []);
-
-  const saveOnHide = useCallback(async () => {
-    try {
-      const { invoke } = await import("@tauri-apps/api/core");
-      // Get content from editor via synchronous event
-      let content = "";
-      const handler = (e: Event) => {
-        content = (e as CustomEvent).detail as string;
-      };
-      window.addEventListener("editor-content", handler, { once: true });
-      window.dispatchEvent(new Event("get-content"));
-      window.removeEventListener("editor-content", handler);
-
-      await Promise.all([
-        invoke("save_buffer", { content }),
-        invoke("save_history_entry", { content }),
-      ]);
-    } catch {
-      // Not in Tauri environment
-    }
   }, []);
 
   const handleClose = useCallback(async () => {
