@@ -50,6 +50,12 @@ struct VisibilitySettings {
     hide_menu_bar_icon: bool,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct HistoryEntry {
+    content: String,
+    timestamp: u64,
+}
+
 fn settings_path(app: &AppHandle) -> PathBuf {
     let dir = app
         .path()
@@ -350,6 +356,93 @@ fn update_visibility_settings(
     apply_visibility_settings(&app, &settings);
 }
 
+#[tauri::command]
+fn save_buffer(app: AppHandle, content: String) {
+    let dir = app
+        .path()
+        .app_config_dir()
+        .unwrap_or_else(|_| PathBuf::from("."));
+    fs::create_dir_all(&dir).ok();
+    fs::write(dir.join("buffer.txt"), content).ok();
+}
+
+#[tauri::command]
+fn load_buffer(app: AppHandle) -> Option<String> {
+    let dir = app
+        .path()
+        .app_config_dir()
+        .unwrap_or_else(|_| PathBuf::from("."));
+    let path = dir.join("buffer.txt");
+    if path.exists() {
+        fs::read_to_string(path).ok()
+    } else {
+        None
+    }
+}
+
+#[tauri::command]
+fn save_history_entry(app: AppHandle, content: String) {
+    let trimmed = content.trim();
+    if trimmed.is_empty() {
+        return;
+    }
+
+    let dir = app
+        .path()
+        .app_config_dir()
+        .unwrap_or_else(|_| PathBuf::from("."));
+    fs::create_dir_all(&dir).ok();
+    let path = dir.join("history.json");
+
+    let mut entries: Vec<HistoryEntry> = if path.exists() {
+        fs::read_to_string(&path)
+            .ok()
+            .and_then(|data| serde_json::from_str(&data).ok())
+            .unwrap_or_default()
+    } else {
+        Vec::new()
+    };
+
+    // Skip if duplicate of most recent entry
+    if let Some(first) = entries.first() {
+        if first.content == content {
+            return;
+        }
+    }
+
+    let timestamp = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs();
+
+    entries.insert(0, HistoryEntry { content, timestamp });
+
+    // Keep max 50 entries
+    entries.truncate(50);
+
+    if let Ok(data) = serde_json::to_string_pretty(&entries) {
+        fs::write(path, data).ok();
+    }
+}
+
+#[tauri::command]
+fn get_history(app: AppHandle) -> Vec<HistoryEntry> {
+    let dir = app
+        .path()
+        .app_config_dir()
+        .unwrap_or_else(|_| PathBuf::from("."));
+    let path = dir.join("history.json");
+
+    if path.exists() {
+        fs::read_to_string(&path)
+            .ok()
+            .and_then(|data| serde_json::from_str(&data).ok())
+            .unwrap_or_default()
+    } else {
+        Vec::new()
+    }
+}
+
 // ── App state ─────────────────────────────────────────────────────────
 
 struct ShortcutState_ {
@@ -481,7 +574,11 @@ pub fn run() {
             get_shortcut,
             update_shortcut,
             get_visibility_settings,
-            update_visibility_settings
+            update_visibility_settings,
+            save_buffer,
+            load_buffer,
+            save_history_entry,
+            get_history,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
