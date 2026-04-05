@@ -263,7 +263,7 @@ export default function VimEditor({ onCopy, onModeChange, onLanguageChange, them
       }
     });
 
-    Vim.defineEx("history", "hist", function () {
+    Vim.defineEx("history", "h", function () {
       window.dispatchEvent(new Event("show-history"));
     });
 
@@ -286,6 +286,22 @@ export default function VimEditor({ onCopy, onModeChange, onLanguageChange, them
           effects: languageCompartment.reconfigure(getLanguageExtension(lang)),
         });
         onLanguageChange(lang);
+      }
+    });
+
+    // Auto-detect language when content changes
+    let lastDetectedLang: Language = "markdown";
+    const languageDetectionListener = EditorView.updateListener.of((update) => {
+      if (update.docChanged && !manualLangRef.current) {
+        const content = update.state.doc.toString();
+        const lang = detectLanguage(content);
+        if (lang !== lastDetectedLang) {
+          lastDetectedLang = lang;
+          update.view.dispatch({
+            effects: languageCompartment.reconfigure(getLanguageExtension(lang)),
+          });
+          onLanguageChange(lang);
+        }
       }
     });
 
@@ -329,6 +345,7 @@ export default function VimEditor({ onCopy, onModeChange, onLanguageChange, them
         ]),
         themeCompartment.of(initialThemeRef.current === "dark" ? darkTheme : lightTheme),
         modeChangeListener,
+        languageDetectionListener,
         EditorView.lineWrapping,
       ],
     });
