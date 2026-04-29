@@ -1,6 +1,6 @@
 [package]
 name = "vim-input"
-version = "0.0.2"
+version = "0.0.3"
 description = "A global Vim-mode input box for macOS"
 authors = ["VimInput"]
 license = "MIT"
